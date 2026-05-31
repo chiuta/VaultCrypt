@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VaultCrypt — in-browser encryption</title>
+<meta name="description" content="Encrypt and decrypt any file or text with AES-256 directly in your browser. No server, no account, no telemetry. One HTML file, fully offline.">
+<meta name="author" content="Alexandru-Ionuț Chiuță (Ecoul Stringurilor) — chiuta.github.io">
+<meta property="og:title" content="VaultCrypt — in-browser AES-256 encryption">
+<meta property="og:description" content="Seal and unseal files and messages entirely on your device. One file, forever free, zero telemetry.">
+<meta name="theme-color" content="#0c0b0a">
+<style>
+  :root{
+    --bg:#0c0b0a; --bg2:#13110e; --panel:#181510; --panel2:#1f1b15;
+    --line:#2c271e; --line2:#3a3327;
+    --ink:#ece4d2; --ink-dim:#b6ad98; --muted:#857c68;
+    --brass:#caa15a; --brass-2:#e2c081; --brass-deep:#9a7836;
+    --ok:#7fb069; --warn:#e0a458; --bad:#d4664a; --info:#7ea6c4;
+    --seal:#b5482e; --seal-2:#d35c3f;
+    --shadow:0 18px 50px rgba(0,0,0,.55);
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(1200px 700px at 85% -10%, rgba(202,161,90,.10), transparent 60%),
+      radial-gradient(900px 600px at -10% 110%, rgba(181,72,46,.08), transparent 60%),
+      linear-gradient(180deg,var(--bg),var(--bg2));
+    color:var(--ink); font-family:var(--sans); line-height:1.5;
+    min-height:100vh; -webkit-font-smoothing:antialiased;
+  }
+  body::after{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:9999; opacity:.04;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:28px 20px 60px}
+
+  header{display:flex; align-items:center; gap:18px; padding:8px 4px 22px; border-bottom:1px solid var(--line); position:relative}
+  .emblem{flex:0 0 auto; width:58px; height:58px; filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
+  .titleblock{flex:1 1 auto; min-width:0}
+  h1{font-family:var(--serif); font-weight:600; font-size:30px; margin:0; letter-spacing:.3px;
+     background:linear-gradient(180deg,var(--brass-2),var(--brass-deep)); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .tag{color:var(--muted); font-size:13px; margin-top:2px}
+  .tag b{color:var(--ink-dim); font-weight:600}
+  .head-right{display:flex; flex-direction:column; align-items:flex-end; gap:8px}
+  .head-controls{display:flex; gap:8px; align-items:center}
+  .langsel{background:var(--panel); color:var(--ink-dim); border:1px solid var(--line2); border-radius:9px;
+     padding:6px 10px; font-family:var(--mono); font-size:12px; cursor:pointer; outline:none}
+  .langsel:focus{border-color:var(--brass)}
+  .aboutbtn{background:transparent; color:var(--muted); border:1px solid var(--line2); border-radius:9px;
+     padding:6px 12px; font-family:var(--serif); font-size:13px; cursor:pointer; transition:.15s}
+  .aboutbtn:hover{color:var(--brass-2); border-color:var(--brass-deep)}
+  .offline-badge{display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; color:var(--ok);
+     border:1px solid rgba(127,176,105,.35); background:rgba(127,176,105,.08); padding:3px 9px; border-radius:999px}
+  .offline-badge .dot{width:7px; height:7px; border-radius:50%; background:var(--ok); box-shadow:0 0 8px var(--ok)}
+
+  nav.tabs{display:flex; gap:6px; margin:22px 0 18px; flex-wrap:wrap}
+  .tab{font-family:var(--serif); font-size:16px; color:var(--ink-dim); background:var(--panel); border:1px solid var(--line);
+     padding:10px 18px; border-radius:11px 11px 0 0; cursor:pointer; position:relative; top:1px; transition:.18s}
+  .tab:hover{color:var(--ink); border-color:var(--line2)}
+  .tab.on{color:var(--brass-2); border-color:var(--brass-deep); background:var(--panel2)}
+  .tab.on::after{content:""; position:absolute; left:14px; right:14px; bottom:-1px; height:2px; background:var(--brass)}
+  .tab .ic{margin-right:8px}
+
+  .panel{background:var(--panel2); border:1px solid var(--line); border-radius:0 14px 14px 14px; padding:22px; box-shadow:var(--shadow)}
+  .view{display:none} .view.on{display:block}
+
+  label.l{display:block; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:0 0 7px 2px; font-family:var(--mono)}
+  .seg{display:inline-flex; background:var(--panel); border:1px solid var(--line2); border-radius:10px; padding:3px; gap:3px; margin-bottom:16px}
+  .seg button{background:transparent; border:0; color:var(--ink-dim); padding:7px 16px; border-radius:7px; cursor:pointer; font-size:14px; font-family:var(--sans)}
+  .seg button.on{background:var(--brass); color:#1b1505; font-weight:700}
+
+  .drop{border:1.5px dashed var(--line2); border-radius:12px; padding:30px 18px; text-align:center; cursor:pointer; transition:.18s; background:
+     repeating-linear-gradient(45deg, rgba(255,255,255,.012) 0 10px, transparent 10px 20px)}
+  .drop:hover,.drop.hot{border-color:var(--brass); background:rgba(202,161,90,.06)}
+  .drop .big{font-family:var(--serif); font-size:18px; color:var(--ink)}
+  .drop .sub{font-size:13px; color:var(--muted); margin-top:6px}
+  .drop svg{opacity:.55; margin-bottom:8px}
+  .filechip{display:flex; align-items:center; gap:12px; background:var(--panel); border:1px solid var(--line2); border-radius:11px; padding:12px 14px; margin-top:10px}
+  .filechip .nm{font-family:var(--mono); font-size:13px; color:var(--ink); word-break:break-all; flex:1 1 auto}
+  .filechip .sz{font-family:var(--mono); font-size:12px; color:var(--muted); white-space:nowrap}
+  .filechip .x{cursor:pointer; color:var(--muted); border:1px solid var(--line2); border-radius:7px; padding:3px 8px; background:transparent}
+  .filechip .x:hover{color:var(--bad); border-color:var(--bad)}
+  .filechip .dl{cursor:pointer; color:var(--brass-2); border:1px solid var(--brass-deep); border-radius:7px; padding:4px 10px; background:transparent; font-size:12px; white-space:nowrap}
+  .filechip .dl:hover{background:rgba(202,161,90,.12)}
+
+  textarea,input[type=text],input[type=password],select.lvl{
+    width:100%; background:var(--bg); color:var(--ink); border:1px solid var(--line2); border-radius:10px;
+    padding:11px 13px; font-family:var(--mono); font-size:14px; outline:none; transition:.15s}
+  textarea{min-height:120px; resize:vertical; line-height:1.55}
+  textarea:focus,input:focus,select.lvl:focus{border-color:var(--brass); box-shadow:0 0 0 3px rgba(202,161,90,.14)}
+  select.lvl{cursor:pointer}
+
+  .field{margin-bottom:16px}
+  .pwrow{position:relative}
+  .pwrow input{padding-right:46px}
+  .eye{position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:0; cursor:pointer; color:var(--muted); padding:6px; border-radius:7px}
+  .eye:hover{color:var(--brass-2)}
+
+  .meter{height:7px; border-radius:5px; background:var(--bg); border:1px solid var(--line); margin-top:9px; overflow:hidden}
+  .meter > i{display:block; height:100%; width:0%; transition:.3s; border-radius:5px}
+  .meterlabel{display:flex; justify-content:space-between; font-family:var(--mono); font-size:11.5px; margin-top:6px; color:var(--muted)}
+  .meterlabel b{font-weight:700}
+  .crackline{font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:4px}
+
+  .row{display:flex; gap:14px; flex-wrap:wrap}
+  .row > *{flex:1 1 200px}
+  .opts{display:flex; gap:18px; flex-wrap:wrap; margin:6px 0 4px}
+  .opts label{display:flex; gap:8px; align-items:center; font-size:13px; color:var(--ink-dim); cursor:pointer}
+  .opts input{accent-color:var(--brass); width:auto}
+
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:9px; font-family:var(--serif); font-size:16px;
+     background:linear-gradient(180deg,var(--brass-2),var(--brass)); color:#221a06; border:0; border-radius:11px;
+     padding:13px 22px; cursor:pointer; font-weight:600; box-shadow:0 6px 18px rgba(202,161,90,.22); transition:.15s}
+  .btn:hover{filter:brightness(1.06); transform:translateY(-1px)}
+  .btn:active{transform:translateY(0)}
+  .btn[disabled]{opacity:.45; cursor:not-allowed; transform:none; box-shadow:none}
+  .btn.ghost{background:transparent; color:var(--ink-dim); border:1px solid var(--line2); box-shadow:none}
+  .btn.ghost:hover{color:var(--ink); border-color:var(--brass)}
+  .btn.full{width:100%; margin-top:6px}
+  .btn.seal{background:linear-gradient(180deg,var(--seal-2),var(--seal)); color:#fff3ee; box-shadow:0 6px 18px rgba(181,72,46,.28)}
+
+  .out{margin-top:18px; border-top:1px dashed var(--line2); padding-top:18px; display:none}
+  .out.on{display:block}
+  .status{font-family:var(--mono); font-size:13px; padding:11px 14px; border-radius:10px; margin-bottom:14px; display:flex; gap:9px; align-items:flex-start}
+  .status.ok{background:rgba(127,176,105,.10); border:1px solid rgba(127,176,105,.35); color:#bcd9a8}
+  .status.bad{background:rgba(212,102,74,.10); border:1px solid rgba(212,102,74,.35); color:#e6a795}
+  .status.info{background:rgba(126,166,196,.10); border:1px solid rgba(126,166,196,.30); color:#bcd1e0}
+
+  .armor{width:100%; background:var(--bg); border:1px solid var(--line2); border-radius:10px; padding:12px; font-family:var(--mono);
+     font-size:12px; color:var(--brass-2); min-height:120px; resize:vertical; line-height:1.45; word-break:break-all}
+  .hint{font-size:12.5px; color:var(--muted); margin-top:8px; line-height:1.55}
+  .hint code{font-family:var(--mono); color:var(--ink-dim); background:var(--bg); padding:1px 5px; border-radius:5px}
+
+  .tools-block{border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:16px; background:var(--panel)}
+  .tools-block h3{font-family:var(--serif); margin:0 0 4px; font-size:18px; color:var(--brass-2)}
+  .tools-block p.d{margin:0 0 14px; font-size:13px; color:var(--muted)}
+  .gen-out{font-family:var(--mono); font-size:15px; color:var(--ink); background:var(--bg); border:1px solid var(--line2);
+     border-radius:9px; padding:12px 14px; word-break:break-all; min-height:20px; user-select:all}
+  .small{font-size:12px; color:var(--muted); font-family:var(--mono)}
+  .rangewrap{display:flex; align-items:center; gap:12px}
+  input[type=range]{flex:1; accent-color:var(--brass)}
+  .checks{display:flex; gap:16px; flex-wrap:wrap; margin:10px 0}
+  .checks label{display:flex; gap:7px; align-items:center; font-size:13px; color:var(--ink-dim); cursor:pointer; font-family:var(--sans); text-transform:none; letter-spacing:0}
+  .checks input{accent-color:var(--brass); width:auto}
+  .ck-hash{font-family:var(--mono); font-size:12.5px; color:var(--brass-2); background:var(--bg); border:1px solid var(--line2); border-radius:9px; padding:12px 14px; word-break:break-all; margin-top:10px}
+
+  .auditlog{font-family:var(--mono); font-size:12px; background:var(--bg); border:1px solid var(--line2); border-radius:9px;
+     padding:12px; max-height:160px; overflow:auto; color:var(--ink-dim)}
+  .auditlog .clean{color:var(--ok)}
+  .auditlog .hit{color:var(--bad)}
+
+  details.spec{margin-top:12px; border:1px solid var(--line); border-radius:10px; background:var(--panel); padding:0 16px}
+  details.spec summary{cursor:pointer; padding:14px 0; font-family:var(--serif); font-size:16px; color:var(--ink-dim)}
+  details.spec[open] summary{color:var(--brass-2)}
+  details.spec .body{padding:0 0 16px; font-size:13.5px; color:var(--ink-dim); line-height:1.65}
+  details.spec table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12.5px; margin:10px 0}
+  details.spec td{border:1px solid var(--line); padding:7px 9px; vertical-align:top}
+  details.spec td:first-child{color:var(--brass-2); white-space:nowrap; width:1%}
+
+  footer{margin-top:34px; padding-top:18px; border-top:1px solid var(--line); display:flex; justify-content:space-between;
+     gap:14px; flex-wrap:wrap; font-size:12.5px; color:var(--muted)}
+  footer a{color:var(--brass); text-decoration:none}
+  footer a:hover{text-decoration:underline}
+  footer .v{font-family:var(--mono)}
+
+  .toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px); opacity:0; pointer-events:none;
+     background:var(--panel2); border:1px solid var(--brass-deep); color:var(--ink); padding:11px 18px; border-radius:11px;
+     font-size:13px; box-shadow:var(--shadow); transition:.25s; z-index:200}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  .modal-bg{position:fixed; inset:0; background:rgba(6,5,4,.72); backdrop-filter:blur(3px); display:none; align-items:center; justify-content:center; z-index:300; padding:20px}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--panel2); border:1px solid var(--line2); border-radius:16px; max-width:540px; width:100%; padding:28px; position:relative; box-shadow:var(--shadow); max-height:88vh; overflow:auto}
+  .modal-x{position:absolute; top:14px; right:16px; background:transparent; border:0; color:var(--muted); font-size:26px; line-height:1; cursor:pointer}
+  .modal-x:hover{color:var(--bad)}
+  .modal-h{font-family:var(--serif); font-size:24px; margin:0 0 18px; color:var(--brass-2)}
+  .modal-sec{margin-bottom:20px}
+  .modal-sec h3{font-family:var(--serif); font-size:16px; margin:0 0 7px; color:var(--ink)}
+  .modal-sec p{margin:0 0 8px; font-size:14px; color:var(--ink-dim); line-height:1.6}
+  .modal-sec a{color:var(--brass)}
+  .support-links{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+  .slink{display:inline-flex; align-items:center; gap:7px; text-decoration:none; padding:9px 16px; border-radius:10px; font-size:14px; font-weight:600; transition:.15s}
+  .slink.patreon{background:#e2554a; color:#fff}
+  .slink.bmc{background:#ffdd00; color:#222}
+  .slink:hover{filter:brightness(1.08); transform:translateY(-1px)}
+
+  @media (max-width:560px){
+    h1{font-size:24px} .wrap{padding:18px 14px 50px}
+    header{flex-wrap:wrap} .head-right{order:3; width:100%; flex-direction:row; justify-content:space-between; align-items:center}
+    .tab{font-size:14px; padding:9px 13px}
+    .modal{padding:22px 18px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <svg class="emblem" viewBox="0 0 100 100" aria-hidden="true">
+      <defs>
+        <radialGradient id="g1" cx="50%" cy="40%" r="65%">
+          <stop offset="0%" stop-color="#e2c081"/><stop offset="55%" stop-color="#caa15a"/><stop offset="100%" stop-color="#7a5d28"/>
+        </radialGradient>
+      </defs>
+      <circle cx="50" cy="50" r="46" fill="none" stroke="#3a3327" stroke-width="3"/>
+      <circle cx="50" cy="50" r="38" fill="none" stroke="url(#g1)" stroke-width="2.5"/>
+      <circle cx="50" cy="50" r="20" fill="none" stroke="url(#g1)" stroke-width="2"/>
+      <g stroke="url(#g1)" stroke-width="3" stroke-linecap="round">
+        <line x1="50" y1="4" x2="50" y2="16"/><line x1="50" y1="84" x2="50" y2="96"/>
+        <line x1="4" y1="50" x2="16" y2="50"/><line x1="84" y1="50" x2="96" y2="50"/>
+        <line x1="18" y1="18" x2="27" y2="27"/><line x1="73" y1="73" x2="82" y2="82"/>
+        <line x1="82" y1="18" x2="73" y2="27"/><line x1="27" y1="73" x2="18" y2="82"/>
+      </g>
+      <path d="M50 38 a8 8 0 0 1 8 8 v4 h-16 v-4 a8 8 0 0 1 8 -8 z" fill="none" stroke="url(#g1)" stroke-width="2.5"/>
+      <rect x="40" y="50" width="20" height="16" rx="3" fill="url(#g1)"/>
+      <circle cx="50" cy="57" r="2.4" fill="#221a06"/>
+    </svg>
+    <div class="titleblock">
+      <h1>VaultCrypt</h1>
+      <div class="tag" data-i18n="tagline"></div>
+    </div>
+    <div class="head-right">
+      <div class="head-controls">
+        <select class="langsel" id="langsel" onchange="setLang(this.value)" aria-label="language">
+          <option value="ro">Română</option>
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="it">Italiano</option>
+          <option value="es">Español</option>
+          <option value="pt">Português</option>
+        </select>
+        <button class="aboutbtn" id="aboutBtn" data-i18n="about">About</button>
+      </div>
+      <span class="offline-badge"><span class="dot"></span><span data-i18n="offline">Offline</span></span>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab on" data-tab="seal" onclick="showTab('seal')"><span class="ic">🔒</span><span data-i18n="t_seal">Seal</span></button>
+    <button class="tab" data-tab="unseal" onclick="showTab('unseal')"><span class="ic">🔓</span><span data-i18n="t_unseal">Unseal</span></button>
+    <button class="tab" data-tab="tools" onclick="showTab('tools')"><span class="ic">⚒</span><span data-i18n="t_tools">Tools</span></button>
+  </nav>
+
+  <section class="view on" id="view-seal">
+    <div class="panel">
+      <div class="seg" id="seal-src">
+        <button class="on" data-src="file" onclick="setSealSrc('file')" data-i18n="src_file">File</button>
+        <button data-src="text" onclick="setSealSrc('text')" data-i18n="src_text">Text</button>
+      </div>
+      <div id="seal-file-wrap">
+        <div class="drop" id="seal-drop" tabindex="0">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#caa15a" stroke-width="1.4"><path d="M12 16V4m0 0L8 8m4-4l4 4"/><path d="M3 15v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4"/></svg>
+          <div class="big" data-i18n="drop_seal">Drop files here or click to choose</div>
+          <div class="sub" data-i18n="drop_seal_sub">Any file type · multiple files allowed · processed locally</div>
+        </div>
+        <input type="file" id="seal-file-input" hidden multiple>
+        <div id="seal-file-chip"></div>
+      </div>
+      <div id="seal-text-wrap" style="display:none">
+        <label class="l" data-i18n="lbl_msg">Message to seal</label>
+        <textarea id="seal-text" placeholder=""></textarea>
+      </div>
+      <div class="field" style="margin-top:18px">
+        <label class="l" data-i18n="lbl_pass">Passphrase</label>
+        <div class="pwrow">
+          <input type="password" id="seal-pass" autocomplete="new-password" spellcheck="false">
+          <button class="eye" onclick="togglePw('seal-pass',this)" aria-label="show">👁</button>
+        </div>
+        <div class="meter"><i id="seal-meter"></i></div>
+        <div class="meterlabel"><span id="seal-meter-label" data-i18n="ms_empty"></span><span id="seal-meter-bits"></span></div>
+        <div class="crackline" id="seal-meter-ct"></div>
+      </div>
+      <div class="field pwrow">
+        <label class="l" data-i18n="lbl_pass2">Confirm passphrase</label>
+        <input type="password" id="seal-pass2" autocomplete="new-password" spellcheck="false">
+      </div>
+      <div class="row">
+        <div class="field">
+          <label class="l" data-i18n="lbl_sec">Security level (PBKDF2)</label>
+          <select class="lvl" id="seal-iter">
+            <option value="310000" data-i18n="sec_bal">Balanced — 310,000 iterations</option>
+            <option value="600000" data-i18n="sec_high">High — 600,000 iterations</option>
+            <option value="1000000" data-i18n="sec_para">Paranoid — 1,000,000 iterations</option>
+          </select>
+        </div>
+        <div class="field" style="display:flex;align-items:flex-end">
+          <button class="btn ghost full" onclick="showTab('tools')" data-i18n="need_pass">Need a strong passphrase?</button>
+        </div>
+      </div>
+      <div class="opts">
+        <label><input type="checkbox" id="seal-wipe"> <span data-i18n="wipe_label">Wipe passphrase after use</span></label>
+      </div>
+      <button class="btn seal full" id="seal-go" onclick="doSeal()"><span>🔒</span><span data-i18n="btn_seal">Seal</span></button>
+      <div class="out" id="seal-out"></div>
+    </div>
+    <details class="spec"><summary data-i18n="how_title">How it works &amp; format</summary><div class="body" id="spec-body"></div></details>
+  </section>
+
+  <section class="view" id="view-unseal">
+    <div class="panel">
+      <div class="seg" id="unseal-src">
+        <button class="on" data-src="file" onclick="setUnsealSrc('file')" data-i18n="usrc_file">.vault file</button>
+        <button data-src="text" onclick="setUnsealSrc('text')" data-i18n="usrc_text">Armored message</button>
+      </div>
+      <div id="unseal-file-wrap">
+        <div class="drop" id="unseal-drop" tabindex="0">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#caa15a" stroke-width="1.4"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+          <div class="big" data-i18n="drop_unseal">Drop a .vault file here or click to choose</div>
+          <div class="sub" data-i18n="drop_unseal_sub">Only containers created by VaultCrypt</div>
+        </div>
+        <input type="file" id="unseal-file-input" hidden>
+        <div id="unseal-file-chip"></div>
+      </div>
+      <div id="unseal-text-wrap" style="display:none">
+        <label class="l" data-i18n="lbl_armor">Paste the armored block</label>
+        <textarea id="unseal-text" class="armor" placeholder="-----BEGIN VAULTCRYPT MESSAGE-----&#10;…&#10;-----END VAULTCRYPT MESSAGE-----"></textarea>
+      </div>
+      <div class="field pwrow" style="margin-top:18px">
+        <label class="l" data-i18n="lbl_pass">Passphrase</label>
+        <div class="pwrow">
+          <input type="password" id="unseal-pass" autocomplete="off" spellcheck="false">
+          <button class="eye" onclick="togglePw('unseal-pass',this)" aria-label="show">👁</button>
+        </div>
+      </div>
+      <div class="opts">
+        <label><input type="checkbox" id="unseal-wipe"> <span data-i18n="wipe_label">Wipe passphrase after use</span></label>
+      </div>
+      <button class="btn full" id="unseal-go" onclick="doUnseal()"><span>🔓</span><span data-i18n="btn_unseal">Unseal</span></button>
+      <div class="out" id="unseal-out"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-tools">
+    <div class="panel">
+      <div class="tools-block">
+        <h3 data-i18n="gen_title">Passphrase generator</h3>
+        <p class="d" data-i18n="gen_desc"></p>
+        <div class="seg" id="gen-mode">
+          <button class="on" data-m="rand" onclick="setGenMode('rand')" data-i18n="gen_rand">Characters</button>
+          <button data-m="words" onclick="setGenMode('words')" data-i18n="gen_words">Words</button>
+        </div>
+        <div id="gen-rand-opts">
+          <label class="l"><span data-i18n="gen_len">Length</span>: <span id="gen-len-val" class="small">20</span></label>
+          <div class="rangewrap"><input type="range" id="gen-len" min="8" max="64" value="20" oninput="document.getElementById('gen-len-val').textContent=this.value;regen()"></div>
+          <div class="checks">
+            <label><input type="checkbox" id="g-lower" checked onchange="regen()"> a‑z</label>
+            <label><input type="checkbox" id="g-upper" checked onchange="regen()"> A‑Z</label>
+            <label><input type="checkbox" id="g-dig" checked onchange="regen()"> 0‑9</label>
+            <label><input type="checkbox" id="g-sym" checked onchange="regen()"> !@#$…</label>
+          </div>
+        </div>
+        <div id="gen-words-opts" style="display:none">
+          <label class="l"><span data-i18n="gen_nwords">Word count</span>: <span id="gen-nw-val" class="small">6</span></label>
+          <div class="rangewrap"><input type="range" id="gen-nw" min="3" max="12" value="6" oninput="document.getElementById('gen-nw-val').textContent=this.value;regen()"></div>
+        </div>
+        <div class="gen-out" id="gen-out" style="margin-top:12px">—</div>
+        <div class="meterlabel"><span id="gen-bits" class="small"></span><span></span></div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn ghost" onclick="regen()">↻ <span data-i18n="gen_new">Generate again</span></button>
+          <button class="btn ghost" onclick="copyText(document.getElementById('gen-out').textContent,this)" data-i18n="copy">Copy</button>
+          <button class="btn ghost" onclick="useGenerated()" data-i18n="gen_use">Use for sealing</button>
+        </div>
+      </div>
+      <div class="tools-block">
+        <h3 data-i18n="ck_title">File checksum</h3>
+        <p class="d" data-i18n="ck_desc"></p>
+        <div class="row">
+          <div class="field">
+            <label class="l" data-i18n="ck_algo">Algorithm</label>
+            <select class="lvl" id="ck-algo" onchange="if(ckFile)computeChecksum()">
+              <option value="SHA-256">SHA‑256</option>
+              <option value="SHA-384">SHA‑384</option>
+              <option value="SHA-512">SHA‑512</option>
+              <option value="SHA-1">SHA‑1</option>
+            </select>
+          </div>
+        </div>
+        <div class="drop" id="ck-drop" tabindex="0" style="padding:20px">
+          <div class="big" style="font-size:15px" data-i18n="ck_drop">Drop a file to compute its hash</div>
+        </div>
+        <input type="file" id="ck-input" hidden>
+        <div id="ck-result"></div>
+      </div>
+      <div class="tools-block">
+        <h3 data-i18n="st_title">Cryptographic self‑test</h3>
+        <p class="d" data-i18n="st_desc"></p>
+        <button class="btn ghost" onclick="selfTest()">▶ <span data-i18n="st_run">Run the test</span></button>
+        <div id="st-out" style="margin-top:12px"></div>
+      </div>
+      <div class="tools-block">
+        <h3 data-i18n="au_title">Privacy audit</h3>
+        <p class="d" data-i18n="au_desc"></p>
+        <div class="auditlog" id="audit-log"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div data-i18n="foot_left"></div>
+    <div><a href="https://chiuta.github.io" target="_blank" rel="noopener">chiuta.github.io</a> · <span class="v">VaultCrypt v2.0</span></div>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-bg" id="aboutModal">
+  <div class="modal">
+    <button class="modal-x" id="aboutClose" aria-label="close">×</button>
+    <h2 class="modal-h" data-i18n="aboutTitle">About VaultCrypt</h2>
+    <div class="modal-sec">
+      <h3 data-i18n="authorH">The author</h3>
+      <p data-i18n="authorBody"></p>
+      <p><a href="https://chiuta.github.io" target="_blank" rel="noopener" data-i18n="visitSite">Website</a>
+         &nbsp;·&nbsp; <a href="mailto:alexio@trom.tf" data-i18n="contact">Contact</a></p>
+    </div>
+    <div class="modal-sec">
+      <h3 data-i18n="tradeFreeH">Trade‑free</h3>
+      <p data-i18n="tradeFreeBody"></p>
+    </div>
+    <div class="modal-sec">
+      <h3 data-i18n="supportH">Support the project</h3>
+      <p data-i18n="supportBody"></p>
+      <div class="support-links">
+        <a class="slink patreon" href="https://www.patreon.com/c/alexio_tf" target="_blank" rel="noopener" data-i18n="patreon">Patreon</a>
+        <a class="slink bmc" href="https://www.buymeacoffee.com/alexio" target="_blank" rel="noopener" data-i18n="bmc">Buy Me a Coffee</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ---------- 0. Network guard + live audit log ---------- */
+const auditEntries = [];
+function logAudit(kind, target, blocked){ auditEntries.push({t:new Date(), kind, target, blocked}); renderAudit(); }
+function renderAudit(){
+  const el = document.getElementById('audit-log'); if(!el) return;
+  if(!auditEntries.length){ el.innerHTML = '<span class="clean">'+T('au_clean')+'</span>'; return; }
+  el.innerHTML = auditEntries.map(e=>{
+    const ts = e.t.toLocaleTimeString();
+    return '<div class="'+(e.blocked?'hit':'clean')+'">['+ts+'] '+(e.blocked?'⛔ '+T('au_blocked'):'✓')+' '+e.kind+' → '+escapeHtml(String(e.target))+'</div>';
+  }).join('');
+}
+(function installNetGuard(){
+  window.fetch = function(...a){ logAudit('fetch', a[0], true); return Promise.reject(new Error('VaultCrypt: network access blocked by design')); };
+  XMLHttpRequest.prototype.open = function(method, url){ logAudit('XHR '+method, url, true); throw new Error('VaultCrypt: network access blocked by design'); };
+  if(navigator.sendBeacon){ navigator.sendBeacon = function(url){ logAudit('beacon', url, true); return false; }; }
+})();
+
+/* ---------- 1. i18n (6 languages) ---------- */
+const I18N = {
+  ro:{
+    tagline:'Sigilează orice fișier sau mesaj cu <b>AES‑256</b> — totul rămâne pe dispozitivul tău.',
+    offline:'Offline · 0 conexiuni', about:'Despre',
+    t_seal:'Sigilează', t_unseal:'Desigilează', t_tools:'Unelte',
+    src_file:'Fișier(e)', src_text:'Text',
+    drop_seal:'Trage fișiere aici sau apasă pentru a alege',
+    drop_seal_sub:'Orice tip · mai multe fișiere permise · procesat local',
+    lbl_msg:'Mesajul de sigilat', lbl_pass:'Parolă', lbl_pass2:'Confirmă parola',
+    lbl_sec:'Nivel de securitate (PBKDF2)',
+    sec_bal:'Echilibrat — 310.000 iterații', sec_high:'Ridicat — 600.000 iterații', sec_para:'Paranoic — 1.000.000 iterații',
+    need_pass:'Nevoie de o parolă tare?', wipe_label:'Șterge parola după folosire',
+    btn_seal:'Sigilează', btn_unseal:'Desigilează',
+    usrc_file:'Fișier .vault', usrc_text:'Mesaj armurat',
+    drop_unseal:'Trage un fișier .vault aici sau apasă pentru a alege',
+    drop_unseal_sub:'Doar containere create cu VaultCrypt',
+    lbl_armor:'Lipește blocul armurat', how_title:'Cum funcționează & format',
+    gen_title:'Generator de parole',
+    gen_desc:'Parole aleatorii criptografic, generate cu <code>crypto.getRandomValues</code>. Nimic nu pleacă de pe dispozitiv.',
+    gen_rand:'Caractere', gen_words:'Cuvinte', gen_len:'Lungime', gen_nwords:'Număr de cuvinte',
+    gen_new:'Generează din nou', copy:'Copiază', gen_use:'Folosește la sigilare',
+    ck_title:'Sumă de control (checksum)',
+    ck_desc:'Calculează amprenta criptografică a unui fișier pentru verificarea integrității. Totul local.',
+    ck_algo:'Algoritm', ck_drop:'Trage un fișier pentru a-i calcula amprenta', ck_copy:'Copiază',
+    st_title:'Auto‑test criptografic',
+    st_desc:'Rulează un ciclu complet sigilare→desigilare în memorie și verifică detectarea alterărilor.',
+    st_run:'Rulează testul',
+    au_title:'Audit de confidențialitate',
+    au_desc:'Toate apelurile de rețea (<code>fetch</code> / <code>XHR</code>) sunt interceptate și blocate. Jurnalul live de mai jos dovedește că nimic nu pleacă de pe dispozitiv.',
+    au_clean:'Nicio încercare de rețea. Curat. ✓', au_blocked:'BLOCAT',
+    foot_left:'Un singur fișier HTML · zero dependențe · funcționează offline · niciun byte nu pleacă de pe dispozitiv.',
+    ms_empty:'Introdu o parolă', ms_vweak:'Foarte slabă', ms_weak:'Slabă', ms_fair:'Acceptabilă', ms_good:'Bună', ms_strong:'Puternică', ms_excellent:'Excelentă',
+    chip_remove:'Elimină',
+    err_nofile:'Selectează mai întâi un fișier.', err_notext:'Scrie mai întâi un mesaj.',
+    err_pass:'Introdu o parolă.', err_passmatch:'Parolele nu coincid.', err_passshort:'Parola e prea scurtă (minim 4 caractere).',
+    err_read:'Nu am putut citi fișierul.',
+    sealing:'Se derivează cheia și se sigilează…', unsealing:'Se derivează cheia și se desigilează…',
+    seal_ok_file:'Fișier sigilat. Containerul e gata de descărcare.',
+    seal_ok_multi:'fișiere sigilate într-un container.',
+    seal_ok_text:'Mesaj sigilat. Copiază blocul armurat de mai jos.',
+    dl_vault:'Descarcă containerul .vault', copy_armor:'Copiază mesajul armurat',
+    dl_one:'Descarcă', dl_all_zip:'Descarcă toate (.zip)',
+    unseal_ok_text:'Desigilat cu succes. Conținutul original:',
+    unseal_ok_file:'Desigilat cu succes. Fișierul original e gata de descărcare.',
+    unseal_ok_multi:'fișiere recuperate din container.',
+    dl_orig:'Descarcă fișierul original', dl_txt:'Descarcă ca .txt',
+    err_unseal:'Desigilare eșuată: parolă greșită sau container alterat/corupt.',
+    err_badcontainer:'Acesta nu pare un container VaultCrypt valid.',
+    err_armor:'Nu am găsit un bloc armurat valid în text.',
+    copied:'Copiat în clipboard ✓', copyfail:'Nu am putut copia.', used_pass:'Parola a fost completată la sigilare ✓',
+    st_pass:'TOATE testele au trecut ✓', st_fail:'Un test a eșuat ✗',
+    st_l1:'round‑trip text (cu diacritice)', st_l2:'round‑trip fișier binar', st_l3:'round‑trip multi‑fișier',
+    st_l4:'parolă greșită respinsă', st_l5:'alterare conținut detectată', st_l6:'alterare antet detectată', st_l7:'compatibilitate cu format v1',
+    iter_label:'iterații', size_label:'dimensiune', files_label:'fișiere',
+    ct_prefix:'Timp estimat de spargere:', u_instant:'instantaneu', u_sec:'secunde', u_min:'minute', u_hour:'ore', u_day:'zile', u_year:'ani', u_century:'secole', ct_eternal:'practic infinit',
+    ck_computing:'Se calculează…',
+    aboutTitle:'Despre VaultCrypt', authorH:'Autorul',
+    authorBody:'VaultCrypt este realizat de Alexandru‑Ionuț Chiuță (Ecoul Stringurilor), dezvoltator, autor SF și muzician. Mai multe instrumente cu fișier unic, fără server și fără telemetrie, la chiuta.github.io.',
+    tradeFreeH:'Trade‑free',
+    tradeFreeBody:'Acest instrument este oferit liber, în spiritul mișcării trade‑free (TROM): fără reclame, fără conturi, fără urmărire. Datele tale nu părăsesc niciodată dispozitivul.',
+    supportH:'Susține proiectul', supportBody:'Dacă îți este de folos și vrei să susții munca, o poți face aici:',
+    patreon:'Patreon', bmc:'Buy Me a Coffee', contact:'Contact', visitSite:'Site web', closeLbl:'Închide',
+    spec_html:`<p>VaultCrypt folosește exclusiv <b>Web Crypto API</b> nativ din browser — nicio bibliotecă externă, niciun apel de rețea.</p>
+      <p><b>Sigilare:</b> din parola ta se derivează o cheie AES‑256 prin <code>PBKDF2‑HMAC‑SHA‑256</code> cu o sare aleatorie de 16 octeți. Datele se criptează cu <code>AES‑256‑GCM</code> folosind un IV aleator de 12 octeți. GCM oferă și autentificare: orice alterare e detectată la desigilare. Numele fișierelor sunt criptate împreună cu conținutul. Poți sigila mai multe fișiere într-un singur container.</p>
+      <p>Containerul (<code>.vault</code> pentru fișiere, bloc text armurat pentru mesaje) are structura:</p>
+      <table><tr><td>0–5</td><td>semnătură „VCRYPT”</td></tr><tr><td>6</td><td>versiune (2)</td></tr><tr><td>7–10</td><td>iterații PBKDF2 (uint32 BE)</td></tr><tr><td>11–26</td><td>sare (16 octeți, aleatorie)</td></tr><tr><td>27–38</td><td>IV (12 octeți, aleator)</td></tr><tr><td>39+</td><td>text cifrat: [număr fișiere] + intrări (nume + date) + etichetă GCM</td></tr></table>
+      <p>Antetul în clar e legat criptografic la conținut (ca <i>additional authenticated data</i>). Containerele mai vechi (v1) rămân compatibile.</p>
+      <p><b>Important:</b> nu există recuperare a parolei. Parolă pierdută = date irecuperabile.</p>`
+  },
+  en:{
+    tagline:'Seal any file or message with <b>AES‑256</b> — everything stays on your device.',
+    offline:'Offline · 0 connections', about:'About',
+    t_seal:'Seal', t_unseal:'Unseal', t_tools:'Tools',
+    src_file:'File(s)', src_text:'Text',
+    drop_seal:'Drop files here or click to choose',
+    drop_seal_sub:'Any file type · multiple files allowed · processed locally',
+    lbl_msg:'Message to seal', lbl_pass:'Passphrase', lbl_pass2:'Confirm passphrase',
+    lbl_sec:'Security level (PBKDF2)',
+    sec_bal:'Balanced — 310,000 iterations', sec_high:'High — 600,000 iterations', sec_para:'Paranoid — 1,000,000 iterations',
+    need_pass:'Need a strong passphrase?', wipe_label:'Wipe passphrase after use',
+    btn_seal:'Seal', btn_unseal:'Unseal',
+    usrc_file:'.vault file', usrc_text:'Armored message',
+    drop_unseal:'Drop a .vault file here or click to choose',
+    drop_unseal_sub:'Only containers created by VaultCrypt',
+    lbl_armor:'Paste the armored block', how_title:'How it works & format',
+    gen_title:'Passphrase generator',
+    gen_desc:'Cryptographically random passphrases via <code>crypto.getRandomValues</code>. Nothing leaves your device.',
+    gen_rand:'Characters', gen_words:'Words', gen_len:'Length', gen_nwords:'Word count',
+    gen_new:'Generate again', copy:'Copy', gen_use:'Use for sealing',
+    ck_title:'File checksum',
+    ck_desc:'Compute the cryptographic fingerprint of a file to verify integrity. Everything local.',
+    ck_algo:'Algorithm', ck_drop:'Drop a file to compute its hash', ck_copy:'Copy',
+    st_title:'Cryptographic self‑test',
+    st_desc:'Runs a full seal→unseal round‑trip in memory and verifies tamper detection.',
+    st_run:'Run the test',
+    au_title:'Privacy audit',
+    au_desc:'Every network call (<code>fetch</code> / <code>XHR</code>) is intercepted and blocked. The live log below proves nothing leaves your device.',
+    au_clean:'No network attempts. Clean. ✓', au_blocked:'BLOCKED',
+    foot_left:'One HTML file · zero dependencies · works offline · no byte ever leaves your device.',
+    ms_empty:'Enter a passphrase', ms_vweak:'Very weak', ms_weak:'Weak', ms_fair:'Fair', ms_good:'Good', ms_strong:'Strong', ms_excellent:'Excellent',
+    chip_remove:'Remove',
+    err_nofile:'Select a file first.', err_notext:'Type a message first.',
+    err_pass:'Enter a passphrase.', err_passmatch:'Passphrases do not match.', err_passshort:'Passphrase is too short (minimum 4 characters).',
+    err_read:'Could not read the file.',
+    sealing:'Deriving key and sealing…', unsealing:'Deriving key and unsealing…',
+    seal_ok_file:'File sealed. The container is ready to download.',
+    seal_ok_multi:'files sealed into one container.',
+    seal_ok_text:'Message sealed. Copy the armored block below.',
+    dl_vault:'Download .vault container', copy_armor:'Copy armored message',
+    dl_one:'Download', dl_all_zip:'Download all (.zip)',
+    unseal_ok_text:'Unsealed successfully. Original content:',
+    unseal_ok_file:'Unsealed successfully. The original file is ready to download.',
+    unseal_ok_multi:'files recovered from the container.',
+    dl_orig:'Download original file', dl_txt:'Download as .txt',
+    err_unseal:'Unseal failed: wrong passphrase or tampered/corrupted container.',
+    err_badcontainer:'This does not look like a valid VaultCrypt container.',
+    err_armor:'No valid armored block found in the text.',
+    copied:'Copied to clipboard ✓', copyfail:'Could not copy.', used_pass:'Passphrase filled into the seal form ✓',
+    st_pass:'ALL tests passed ✓', st_fail:'A test failed ✗',
+    st_l1:'text round‑trip (with diacritics)', st_l2:'binary file round‑trip', st_l3:'multi‑file round‑trip',
+    st_l4:'wrong passphrase rejected', st_l5:'content tamper detected', st_l6:'header tamper detected', st_l7:'v1 format backward compatibility',
+    iter_label:'iterations', size_label:'size', files_label:'files',
+    ct_prefix:'Estimated time to crack:', u_instant:'instant', u_sec:'seconds', u_min:'minutes', u_hour:'hours', u_day:'days', u_year:'years', u_century:'centuries', ct_eternal:'effectively forever',
+    ck_computing:'Computing…',
+    aboutTitle:'About VaultCrypt', authorH:'The author',
+    authorBody:'VaultCrypt is made by Alexandru‑Ionuț Chiuță (Ecoul Stringurilor), a developer, SF author and musician. More single‑file, server‑free, telemetry‑free tools at chiuta.github.io.',
+    tradeFreeH:'Trade‑free',
+    tradeFreeBody:'This tool is offered freely, in the spirit of the trade‑free movement (TROM): no ads, no accounts, no tracking. Your data never leaves your device.',
+    supportH:'Support the project', supportBody:'If you find it useful and want to support the work, you can do so here:',
+    patreon:'Patreon', bmc:'Buy Me a Coffee', contact:'Contact', visitSite:'Website', closeLbl:'Close',
+    spec_html:`<p>VaultCrypt uses only the browser‑native <b>Web Crypto API</b> — no external libraries, no network calls.</p>
+      <p><b>Sealing:</b> your passphrase derives an AES‑256 key via <code>PBKDF2‑HMAC‑SHA‑256</code> with a random 16‑byte salt. Data is encrypted with <code>AES‑256‑GCM</code> using a random 12‑byte IV. GCM also authenticates: any tampering is detected on unseal. Filenames are encrypted with the content. You can seal multiple files into one container.</p>
+      <p>The container (<code>.vault</code> for files, an armored text block for messages) layout:</p>
+      <table><tr><td>0–5</td><td>magic "VCRYPT"</td></tr><tr><td>6</td><td>version (2)</td></tr><tr><td>7–10</td><td>PBKDF2 iterations (uint32 BE)</td></tr><tr><td>11–26</td><td>salt (16 random bytes)</td></tr><tr><td>27–38</td><td>IV (12 random bytes)</td></tr><tr><td>39+</td><td>ciphertext: [file count] + entries (name + data) + GCM tag</td></tr></table>
+      <p>The cleartext header is cryptographically bound to the content (as <i>additional authenticated data</i>). Older (v1) containers stay compatible.</p>
+      <p><b>Important:</b> there is no passphrase recovery. Lost passphrase = unrecoverable data.</p>`
+  },
+  fr:{
+    tagline:'Scellez n’importe quel fichier ou message avec <b>AES‑256</b> — tout reste sur votre appareil.',
+    offline:'Hors ligne · 0 connexion', about:'À propos',
+    t_seal:'Sceller', t_unseal:'Desceller', t_tools:'Outils',
+    src_file:'Fichier(s)', src_text:'Texte',
+    drop_seal:'Déposez des fichiers ici ou cliquez pour choisir',
+    drop_seal_sub:'Tout type · plusieurs fichiers · traité localement',
+    lbl_msg:'Message à sceller', lbl_pass:'Phrase secrète', lbl_pass2:'Confirmez la phrase secrète',
+    lbl_sec:'Niveau de sécurité (PBKDF2)',
+    sec_bal:'Équilibré — 310 000 itérations', sec_high:'Élevé — 600 000 itérations', sec_para:'Paranoïaque — 1 000 000 itérations',
+    need_pass:'Besoin d’une phrase forte ?', wipe_label:'Effacer la phrase après usage',
+    btn_seal:'Sceller', btn_unseal:'Desceller',
+    usrc_file:'Fichier .vault', usrc_text:'Message blindé',
+    drop_unseal:'Déposez un fichier .vault ici ou cliquez pour choisir',
+    drop_unseal_sub:'Uniquement les conteneurs créés par VaultCrypt',
+    lbl_armor:'Collez le bloc blindé', how_title:'Fonctionnement & format',
+    gen_title:'Générateur de phrases secrètes',
+    gen_desc:'Phrases aléatoires cryptographiques via <code>crypto.getRandomValues</code>. Rien ne quitte l’appareil.',
+    gen_rand:'Caractères', gen_words:'Mots', gen_len:'Longueur', gen_nwords:'Nombre de mots',
+    gen_new:'Régénérer', copy:'Copier', gen_use:'Utiliser pour sceller',
+    ck_title:'Somme de contrôle',
+    ck_desc:'Calculez l’empreinte cryptographique d’un fichier pour vérifier son intégrité. Tout en local.',
+    ck_algo:'Algorithme', ck_drop:'Déposez un fichier pour calculer son empreinte', ck_copy:'Copier',
+    st_title:'Auto‑test cryptographique',
+    st_desc:'Exécute un cycle complet sceller→desceller en mémoire et vérifie la détection d’altération.',
+    st_run:'Lancer le test',
+    au_title:'Audit de confidentialité',
+    au_desc:'Tous les appels réseau (<code>fetch</code> / <code>XHR</code>) sont interceptés et bloqués. Le journal en direct prouve que rien ne quitte l’appareil.',
+    au_clean:'Aucune tentative réseau. Propre. ✓', au_blocked:'BLOQUÉ',
+    foot_left:'Un seul fichier HTML · zéro dépendance · fonctionne hors ligne · aucun octet ne quitte l’appareil.',
+    ms_empty:'Saisissez une phrase', ms_vweak:'Très faible', ms_weak:'Faible', ms_fair:'Correcte', ms_good:'Bonne', ms_strong:'Forte', ms_excellent:'Excellente',
+    chip_remove:'Retirer',
+    err_nofile:'Sélectionnez d’abord un fichier.', err_notext:'Écrivez d’abord un message.',
+    err_pass:'Saisissez une phrase secrète.', err_passmatch:'Les phrases ne correspondent pas.', err_passshort:'Phrase trop courte (minimum 4 caractères).',
+    err_read:'Impossible de lire le fichier.',
+    sealing:'Dérivation de la clé et scellement…', unsealing:'Dérivation de la clé et descellement…',
+    seal_ok_file:'Fichier scellé. Le conteneur est prêt à télécharger.',
+    seal_ok_multi:'fichiers scellés dans un conteneur.',
+    seal_ok_text:'Message scellé. Copiez le bloc blindé ci‑dessous.',
+    dl_vault:'Télécharger le conteneur .vault', copy_armor:'Copier le message blindé',
+    dl_one:'Télécharger', dl_all_zip:'Tout télécharger (.zip)',
+    unseal_ok_text:'Descellé avec succès. Contenu original :',
+    unseal_ok_file:'Descellé avec succès. Le fichier original est prêt à télécharger.',
+    unseal_ok_multi:'fichiers récupérés du conteneur.',
+    dl_orig:'Télécharger le fichier original', dl_txt:'Télécharger en .txt',
+    err_unseal:'Échec du descellement : phrase erronée ou conteneur altéré/corrompu.',
+    err_badcontainer:'Ceci ne semble pas être un conteneur VaultCrypt valide.',
+    err_armor:'Aucun bloc blindé valide trouvé dans le texte.',
+    copied:'Copié dans le presse‑papiers ✓', copyfail:'Copie impossible.', used_pass:'Phrase insérée dans le formulaire ✓',
+    st_pass:'TOUS les tests réussis ✓', st_fail:'Un test a échoué ✗',
+    st_l1:'aller‑retour texte (avec diacritiques)', st_l2:'aller‑retour fichier binaire', st_l3:'aller‑retour multi‑fichiers',
+    st_l4:'phrase erronée rejetée', st_l5:'altération du contenu détectée', st_l6:'altération de l’en‑tête détectée', st_l7:'compatibilité format v1',
+    iter_label:'itérations', size_label:'taille', files_label:'fichiers',
+    ct_prefix:'Temps estimé pour casser :', u_instant:'instantané', u_sec:'secondes', u_min:'minutes', u_hour:'heures', u_day:'jours', u_year:'ans', u_century:'siècles', ct_eternal:'pratiquement infini',
+    ck_computing:'Calcul…',
+    aboutTitle:'À propos de VaultCrypt', authorH:'L’auteur',
+    authorBody:'VaultCrypt est réalisé par Alexandru‑Ionuț Chiuță (Ecoul Stringurilor), développeur, auteur de SF et musicien. D’autres outils en fichier unique, sans serveur ni télémétrie, sur chiuta.github.io.',
+    tradeFreeH:'Trade‑free',
+    tradeFreeBody:'Cet outil est offert librement, dans l’esprit du mouvement trade‑free (TROM) : pas de publicité, pas de comptes, pas de pistage. Vos données ne quittent jamais votre appareil.',
+    supportH:'Soutenir le projet', supportBody:'Si cela vous est utile et que vous souhaitez soutenir le travail, vous pouvez le faire ici :',
+    patreon:'Patreon', bmc:'Buy Me a Coffee', contact:'Contact', visitSite:'Site web', closeLbl:'Fermer',
+    spec_html:`<p>VaultCrypt utilise uniquement la <b>Web Crypto API</b> native du navigateur — aucune bibliothèque externe, aucun appel réseau.</p>
+      <p><b>Scellement :</b> votre phrase dérive une clé AES‑256 via <code>PBKDF2‑HMAC‑SHA‑256</code> avec un sel aléatoire de 16 octets. Les données sont chiffrées en <code>AES‑256‑GCM</code> avec un IV aléatoire de 12 octets. GCM authentifie aussi : toute altération est détectée au descellement. Les noms de fichiers sont chiffrés avec le contenu. Vous pouvez sceller plusieurs fichiers dans un conteneur.</p>
+      <p>Structure du conteneur (<code>.vault</code> pour les fichiers, bloc blindé pour les messages) :</p>
+      <table><tr><td>0–5</td><td>signature « VCRYPT »</td></tr><tr><td>6</td><td>version (2)</td></tr><tr><td>7–10</td><td>itérations PBKDF2 (uint32 BE)</td></tr><tr><td>11–26</td><td>sel (16 octets aléatoires)</td></tr><tr><td>27–38</td><td>IV (12 octets aléatoires)</td></tr><tr><td>39+</td><td>chiffré : [nombre de fichiers] + entrées (nom + données) + étiquette GCM</td></tr></table>
+      <p>L’en‑tête en clair est lié cryptographiquement au contenu (comme <i>additional authenticated data</i>). Les anciens conteneurs (v1) restent compatibles.</p>
+      <p><b>Important :</b> aucune récupération de phrase. Phrase perdue = données irrécupérables.</p>`
+  },
+  it:{
+    tagline:'Sigilla qualsiasi file o messaggio con <b>AES‑256</b> — tutto resta sul tuo dispositivo.',
+    offline:'Offline · 0 connessioni', about:'Info',
+    t_seal:'Sigilla', t_unseal:'Apri', t_tools:'Strumenti',
+    src_file:'File', src_text:'Testo',
+    drop_seal:'Trascina i file qui o fai clic per scegliere',
+    drop_seal_sub:'Qualsiasi tipo · più file consentiti · elaborato localmente',
+    lbl_msg:'Messaggio da sigillare', lbl_pass:'Passphrase', lbl_pass2:'Conferma passphrase',
+    lbl_sec:'Livello di sicurezza (PBKDF2)',
+    sec_bal:'Bilanciato — 310.000 iterazioni', sec_high:'Alto — 600.000 iterazioni', sec_para:'Paranoico — 1.000.000 iterazioni',
+    need_pass:'Serve una passphrase forte?', wipe_label:'Cancella la passphrase dopo l’uso',
+    btn_seal:'Sigilla', btn_unseal:'Apri',
+    usrc_file:'File .vault', usrc_text:'Messaggio blindato',
+    drop_unseal:'Trascina un file .vault qui o fai clic per scegliere',
+    drop_unseal_sub:'Solo contenitori creati da VaultCrypt',
+    lbl_armor:'Incolla il blocco blindato', how_title:'Come funziona & formato',
+    gen_title:'Generatore di passphrase',
+    gen_desc:'Passphrase casuali crittografiche tramite <code>crypto.getRandomValues</code>. Nulla lascia il dispositivo.',
+    gen_rand:'Caratteri', gen_words:'Parole', gen_len:'Lunghezza', gen_nwords:'Numero di parole',
+    gen_new:'Rigenera', copy:'Copia', gen_use:'Usa per sigillare',
+    ck_title:'Checksum del file',
+    ck_desc:'Calcola l’impronta crittografica di un file per verificarne l’integrità. Tutto in locale.',
+    ck_algo:'Algoritmo', ck_drop:'Trascina un file per calcolare l’impronta', ck_copy:'Copia',
+    st_title:'Autotest crittografico',
+    st_desc:'Esegue un ciclo completo sigilla→apri in memoria e verifica il rilevamento delle manomissioni.',
+    st_run:'Esegui il test',
+    au_title:'Audit della privacy',
+    au_desc:'Ogni chiamata di rete (<code>fetch</code> / <code>XHR</code>) viene intercettata e bloccata. Il registro live dimostra che nulla lascia il dispositivo.',
+    au_clean:'Nessun tentativo di rete. Pulito. ✓', au_blocked:'BLOCCATO',
+    foot_left:'Un solo file HTML · zero dipendenze · funziona offline · nessun byte lascia il dispositivo.',
+    ms_empty:'Inserisci una passphrase', ms_vweak:'Molto debole', ms_weak:'Debole', ms_fair:'Discreta', ms_good:'Buona', ms_strong:'Forte', ms_excellent:'Eccellente',
+    chip_remove:'Rimuovi',
+    err_nofile:'Seleziona prima un file.', err_notext:'Scrivi prima un messaggio.',
+    err_pass:'Inserisci una passphrase.', err_passmatch:'Le passphrase non coincidono.', err_passshort:'Passphrase troppo corta (minimo 4 caratteri).',
+    err_read:'Impossibile leggere il file.',
+    sealing:'Derivazione della chiave e sigillatura…', unsealing:'Derivazione della chiave e apertura…',
+    seal_ok_file:'File sigillato. Il contenitore è pronto per il download.',
+    seal_ok_multi:'file sigillati in un contenitore.',
+    seal_ok_text:'Messaggio sigillato. Copia il blocco blindato qui sotto.',
+    dl_vault:'Scarica il contenitore .vault', copy_armor:'Copia il messaggio blindato',
+    dl_one:'Scarica', dl_all_zip:'Scarica tutto (.zip)',
+    unseal_ok_text:'Aperto con successo. Contenuto originale:',
+    unseal_ok_file:'Aperto con successo. Il file originale è pronto per il download.',
+    unseal_ok_multi:'file recuperati dal contenitore.',
+    dl_orig:'Scarica il file originale', dl_txt:'Scarica come .txt',
+    err_unseal:'Apertura fallita: passphrase errata o contenitore manomesso/corrotto.',
+    err_badcontainer:'Questo non sembra un contenitore VaultCrypt valido.',
+    err_armor:'Nessun blocco blindato valido trovato nel testo.',
+    copied:'Copiato negli appunti ✓', copyfail:'Copia non riuscita.', used_pass:'Passphrase inserita nel modulo ✓',
+    st_pass:'TUTTI i test superati ✓', st_fail:'Un test è fallito ✗',
+    st_l1:'andata‑ritorno testo (con diacritici)', st_l2:'andata‑ritorno file binario', st_l3:'andata‑ritorno multi‑file',
+    st_l4:'passphrase errata respinta', st_l5:'manomissione contenuto rilevata', st_l6:'manomissione intestazione rilevata', st_l7:'compatibilità formato v1',
+    iter_label:'iterazioni', size_label:'dimensione', files_label:'file',
+    ct_prefix:'Tempo stimato per violare:', u_instant:'istantaneo', u_sec:'secondi', u_min:'minuti', u_hour:'ore', u_day:'giorni', u_year:'anni', u_century:'secoli', ct_eternal:'praticamente infinito',
+    ck_computing:'Calcolo…',
+    aboutTitle:'Info su VaultCrypt', authorH:'L’autore',
+    authorBody:'VaultCrypt è realizzato da Alexandru‑Ionuț Chiuță (Ecoul Stringurilor), sviluppatore, autore di fantascienza e musicista. Altri strumenti a file singolo, senza server e senza telemetria, su chiuta.github.io.',
+    tradeFreeH:'Trade‑free',
+    tradeFreeBody:'Questo strumento è offerto liberamente, nello spirito del movimento trade‑free (TROM): niente pubblicità, niente account, niente tracciamento. I tuoi dati non lasciano mai il dispositivo.',
+    supportH:'Sostieni il progetto', supportBody:'Se ti è utile e vuoi sostenere il lavoro, puoi farlo qui:',
+    patreon:'Patreon', bmc:'Buy Me a Coffee', contact:'Contatto', visitSite:'Sito web', closeLbl:'Chiudi',
+    spec_html:`<p>VaultCrypt usa solo la <b>Web Crypto API</b> nativa del browser — nessuna libreria esterna, nessuna chiamata di rete.</p>
+      <p><b>Sigillatura:</b> la passphrase deriva una chiave AES‑256 tramite <code>PBKDF2‑HMAC‑SHA‑256</code> con un salt casuale di 16 byte. I dati sono cifrati con <code>AES‑256‑GCM</code> usando un IV casuale di 12 byte. GCM autentica anche: ogni manomissione viene rilevata all’apertura. I nomi dei file sono cifrati con il contenuto. Puoi sigillare più file in un contenitore.</p>
+      <p>Struttura del contenitore (<code>.vault</code> per i file, blocco blindato per i messaggi):</p>
+      <table><tr><td>0–5</td><td>firma "VCRYPT"</td></tr><tr><td>6</td><td>versione (2)</td></tr><tr><td>7–10</td><td>iterazioni PBKDF2 (uint32 BE)</td></tr><tr><td>11–26</td><td>salt (16 byte casuali)</td></tr><tr><td>27–38</td><td>IV (12 byte casuali)</td></tr><tr><td>39+</td><td>cifrato: [numero file] + voci (nome + dati) + tag GCM</td></tr></table>
+      <p>L’intestazione in chiaro è legata crittograficamente al contenuto (come <i>additional authenticated data</i>). I contenitori più vecchi (v1) restano compatibili.</p>
+      <p><b>Importante:</b> non esiste recupero della passphrase. Passphrase persa = dati irrecuperabili.</p>`
+  },
+  es:{
+    tagline:'Sella cualquier archivo o mensaje con <b>AES‑256</b> — todo permanece en tu dispositivo.',
+    offline:'Sin conexión · 0 conexiones', about:'Acerca de',
+    t_seal:'Sellar', t_unseal:'Abrir', t_tools:'Herramientas',
+    src_file:'Archivo(s)', src_text:'Texto',
+    drop_seal:'Arrastra archivos aquí o haz clic para elegir',
+    drop_seal_sub:'Cualquier tipo · varios archivos · procesado localmente',
+    lbl_msg:'Mensaje a sellar', lbl_pass:'Contraseña', lbl_pass2:'Confirma la contraseña',
+    lbl_sec:'Nivel de seguridad (PBKDF2)',
+    sec_bal:'Equilibrado — 310.000 iteraciones', sec_high:'Alto — 600.000 iteraciones', sec_para:'Paranoico — 1.000.000 iteraciones',
+    need_pass:'¿Necesitas una contraseña fuerte?', wipe_label:'Borrar la contraseña tras usarla',
+    btn_seal:'Sellar', btn_unseal:'Abrir',
+    usrc_file:'Archivo .vault', usrc_text:'Mensaje blindado',
+    drop_unseal:'Arrastra un archivo .vault aquí o haz clic para elegir',
+    drop_unseal_sub:'Solo contenedores creados por VaultCrypt',
+    lbl_armor:'Pega el bloque blindado', how_title:'Cómo funciona & formato',
+    gen_title:'Generador de contraseñas',
+    gen_desc:'Contraseñas aleatorias criptográficas con <code>crypto.getRandomValues</code>. Nada sale del dispositivo.',
+    gen_rand:'Caracteres', gen_words:'Palabras', gen_len:'Longitud', gen_nwords:'Número de palabras',
+    gen_new:'Generar de nuevo', copy:'Copiar', gen_use:'Usar para sellar',
+    ck_title:'Suma de comprobación',
+    ck_desc:'Calcula la huella criptográfica de un archivo para verificar su integridad. Todo en local.',
+    ck_algo:'Algoritmo', ck_drop:'Arrastra un archivo para calcular su huella', ck_copy:'Copiar',
+    st_title:'Autoprueba criptográfica',
+    st_desc:'Ejecuta un ciclo completo sellar→abrir en memoria y verifica la detección de manipulación.',
+    st_run:'Ejecutar la prueba',
+    au_title:'Auditoría de privacidad',
+    au_desc:'Toda llamada de red (<code>fetch</code> / <code>XHR</code>) se intercepta y bloquea. El registro en vivo demuestra que nada sale del dispositivo.',
+    au_clean:'Sin intentos de red. Limpio. ✓', au_blocked:'BLOQUEADO',
+    foot_left:'Un solo archivo HTML · cero dependencias · funciona sin conexión · ningún byte sale del dispositivo.',
+    ms_empty:'Introduce una contraseña', ms_vweak:'Muy débil', ms_weak:'Débil', ms_fair:'Aceptable', ms_good:'Buena', ms_strong:'Fuerte', ms_excellent:'Excelente',
+    chip_remove:'Quitar',
+    err_nofile:'Selecciona primero un archivo.', err_notext:'Escribe primero un mensaje.',
+    err_pass:'Introduce una contraseña.', err_passmatch:'Las contraseñas no coinciden.', err_passshort:'Contraseña demasiado corta (mínimo 4 caracteres).',
+    err_read:'No se pudo leer el archivo.',
+    sealing:'Derivando la clave y sellando…', unsealing:'Derivando la clave y abriendo…',
+    seal_ok_file:'Archivo sellado. El contenedor está listo para descargar.',
+    seal_ok_multi:'archivos sellados en un contenedor.',
+    seal_ok_text:'Mensaje sellado. Copia el bloque blindado de abajo.',
+    dl_vault:'Descargar contenedor .vault', copy_armor:'Copiar mensaje blindado',
+    dl_one:'Descargar', dl_all_zip:'Descargar todo (.zip)',
+    unseal_ok_text:'Abierto con éxito. Contenido original:',
+    unseal_ok_file:'Abierto con éxito. El archivo original está listo para descargar.',
+    unseal_ok_multi:'archivos recuperados del contenedor.',
+    dl_orig:'Descargar archivo original', dl_txt:'Descargar como .txt',
+    err_unseal:'Fallo al abrir: contraseña incorrecta o contenedor manipulado/corrupto.',
+    err_badcontainer:'Esto no parece un contenedor VaultCrypt válido.',
+    err_armor:'No se encontró un bloque blindado válido en el texto.',
+    copied:'Copiado al portapapeles ✓', copyfail:'No se pudo copiar.', used_pass:'Contraseña insertada en el formulario ✓',
+    st_pass:'TODAS las pruebas superadas ✓', st_fail:'Una prueba falló ✗',
+    st_l1:'ida y vuelta de texto (con diacríticos)', st_l2:'ida y vuelta de archivo binario', st_l3:'ida y vuelta multi‑archivo',
+    st_l4:'contraseña incorrecta rechazada', st_l5:'manipulación de contenido detectada', st_l6:'manipulación de cabecera detectada', st_l7:'compatibilidad con formato v1',
+    iter_label:'iteraciones', size_label:'tamaño', files_label:'archivos',
+    ct_prefix:'Tiempo estimado para descifrar:', u_instant:'instantáneo', u_sec:'segundos', u_min:'minutos', u_hour:'horas', u_day:'días', u_year:'años', u_century:'siglos', ct_eternal:'prácticamente infinito',
+    ck_computing:'Calculando…',
+    aboutTitle:'Acerca de VaultCrypt', authorH:'El autor',
+    authorBody:'VaultCrypt está hecho por Alexandru‑Ionuț Chiuță (Ecoul Stringurilor), desarrollador, autor de ciencia ficción y músico. Más herramientas de archivo único, sin servidor y sin telemetría, en chiuta.github.io.',
+    tradeFreeH:'Trade‑free',
+    tradeFreeBody:'Esta herramienta se ofrece libremente, en el espíritu del movimiento trade‑free (TROM): sin anuncios, sin cuentas, sin rastreo. Tus datos nunca salen de tu dispositivo.',
+    supportH:'Apoya el proyecto', supportBody:'Si te resulta útil y quieres apoyar el trabajo, puedes hacerlo aquí:',
+    patreon:'Patreon', bmc:'Buy Me a Coffee', contact:'Contacto', visitSite:'Sitio web', closeLbl:'Cerrar',
+    spec_html:`<p>VaultCrypt usa solo la <b>Web Crypto API</b> nativa del navegador — sin bibliotecas externas, sin llamadas de red.</p>
+      <p><b>Sellado:</b> tu contraseña deriva una clave AES‑256 mediante <code>PBKDF2‑HMAC‑SHA‑256</code> con una sal aleatoria de 16 bytes. Los datos se cifran con <code>AES‑256‑GCM</code> usando un IV aleatorio de 12 bytes. GCM también autentica: cualquier manipulación se detecta al abrir. Los nombres de archivo se cifran con el contenido. Puedes sellar varios archivos en un contenedor.</p>
+      <p>Estructura del contenedor (<code>.vault</code> para archivos, bloque blindado para mensajes):</p>
+      <table><tr><td>0–5</td><td>firma "VCRYPT"</td></tr><tr><td>6</td><td>versión (2)</td></tr><tr><td>7–10</td><td>iteraciones PBKDF2 (uint32 BE)</td></tr><tr><td>11–26</td><td>sal (16 bytes aleatorios)</td></tr><tr><td>27–38</td><td>IV (12 bytes aleatorios)</td></tr><tr><td>39+</td><td>cifrado: [número de archivos] + entradas (nombre + datos) + etiqueta GCM</td></tr></table>
+      <p>La cabecera en claro está ligada criptográficamente al contenido (como <i>additional authenticated data</i>). Los contenedores antiguos (v1) siguen siendo compatibles.</p>
+      <p><b>Importante:</b> no hay recuperación de contraseña. Contraseña perdida = datos irrecuperables.</p>`
+  },
+  pt:{
+    tagline:'Sele qualquer ficheiro ou mensagem com <b>AES‑256</b> — tudo permanece no seu dispositivo.',
+    offline:'Offline · 0 ligações', about:'Sobre',
+    t_seal:'Selar', t_unseal:'Abrir', t_tools:'Ferramentas',
+    src_file:'Ficheiro(s)', src_text:'Texto',
+    drop_seal:'Arraste ficheiros para aqui ou clique para escolher',
+    drop_seal_sub:'Qualquer tipo · vários ficheiros · processado localmente',
+    lbl_msg:'Mensagem a selar', lbl_pass:'Palavra‑passe', lbl_pass2:'Confirme a palavra‑passe',
+    lbl_sec:'Nível de segurança (PBKDF2)',
+    sec_bal:'Equilibrado — 310.000 iterações', sec_high:'Alto — 600.000 iterações', sec_para:'Paranoico — 1.000.000 iterações',
+    need_pass:'Precisa de uma palavra‑passe forte?', wipe_label:'Apagar a palavra‑passe após o uso',
+    btn_seal:'Selar', btn_unseal:'Abrir',
+    usrc_file:'Ficheiro .vault', usrc_text:'Mensagem blindada',
+    drop_unseal:'Arraste um ficheiro .vault para aqui ou clique para escolher',
+    drop_unseal_sub:'Apenas contentores criados pelo VaultCrypt',
+    lbl_armor:'Cole o bloco blindado', how_title:'Como funciona & formato',
+    gen_title:'Gerador de palavras‑passe',
+    gen_desc:'Palavras‑passe aleatórias criptográficas via <code>crypto.getRandomValues</code>. Nada sai do dispositivo.',
+    gen_rand:'Caracteres', gen_words:'Palavras', gen_len:'Comprimento', gen_nwords:'Número de palavras',
+    gen_new:'Gerar de novo', copy:'Copiar', gen_use:'Usar para selar',
+    ck_title:'Soma de verificação',
+    ck_desc:'Calcule a impressão criptográfica de um ficheiro para verificar a integridade. Tudo local.',
+    ck_algo:'Algoritmo', ck_drop:'Arraste um ficheiro para calcular a impressão', ck_copy:'Copiar',
+    st_title:'Autoteste criptográfico',
+    st_desc:'Executa um ciclo completo selar→abrir em memória e verifica a deteção de adulteração.',
+    st_run:'Executar o teste',
+    au_title:'Auditoria de privacidade',
+    au_desc:'Todas as chamadas de rede (<code>fetch</code> / <code>XHR</code>) são intercetadas e bloqueadas. O registo ao vivo prova que nada sai do dispositivo.',
+    au_clean:'Sem tentativas de rede. Limpo. ✓', au_blocked:'BLOQUEADO',
+    foot_left:'Um único ficheiro HTML · zero dependências · funciona offline · nenhum byte sai do dispositivo.',
+    ms_empty:'Introduza uma palavra‑passe', ms_vweak:'Muito fraca', ms_weak:'Fraca', ms_fair:'Aceitável', ms_good:'Boa', ms_strong:'Forte', ms_excellent:'Excelente',
+    chip_remove:'Remover',
+    err_nofile:'Selecione primeiro um ficheiro.', err_notext:'Escreva primeiro uma mensagem.',
+    err_pass:'Introduza uma palavra‑passe.', err_passmatch:'As palavras‑passe não coincidem.', err_passshort:'Palavra‑passe demasiado curta (mínimo 4 caracteres).',
+    err_read:'Não foi possível ler o ficheiro.',
+    sealing:'A derivar a chave e a selar…', unsealing:'A derivar a chave e a abrir…',
+    seal_ok_file:'Ficheiro selado. O contentor está pronto para download.',
+    seal_ok_multi:'ficheiros selados num contentor.',
+    seal_ok_text:'Mensagem selada. Copie o bloco blindado abaixo.',
+    dl_vault:'Descarregar contentor .vault', copy_armor:'Copiar mensagem blindada',
+    dl_one:'Descarregar', dl_all_zip:'Descarregar tudo (.zip)',
+    unseal_ok_text:'Aberto com sucesso. Conteúdo original:',
+    unseal_ok_file:'Aberto com sucesso. O ficheiro original está pronto para download.',
+    unseal_ok_multi:'ficheiros recuperados do contentor.',
+    dl_orig:'Descarregar ficheiro original', dl_txt:'Descarregar como .txt',
+    err_unseal:'Falha ao abrir: palavra‑passe errada ou contentor adulterado/corrompido.',
+    err_badcontainer:'Isto não parece um contentor VaultCrypt válido.',
+    err_armor:'Nenhum bloco blindado válido encontrado no texto.',
+    copied:'Copiado para a área de transferência ✓', copyfail:'Não foi possível copiar.', used_pass:'Palavra‑passe inserida no formulário ✓',
+    st_pass:'TODOS os testes passaram ✓', st_fail:'Um teste falhou ✗',
+    st_l1:'ida e volta de texto (com diacríticos)', st_l2:'ida e volta de ficheiro binário', st_l3:'ida e volta multi‑ficheiro',
+    st_l4:'palavra‑passe errada rejeitada', st_l5:'adulteração de conteúdo detetada', st_l6:'adulteração de cabeçalho detetada', st_l7:'compatibilidade com formato v1',
+    iter_label:'iterações', size_label:'tamanho', files_label:'ficheiros',
+    ct_prefix:'Tempo estimado para quebrar:', u_instant:'instantâneo', u_sec:'segundos', u_min:'minutos', u_hour:'horas', u_day:'dias', u_year:'anos', u_century:'séculos', ct_eternal:'praticamente infinito',
+    ck_computing:'A calcular…',
+    aboutTitle:'Sobre o VaultCrypt', authorH:'O autor',
+    authorBody:'O VaultCrypt é feito por Alexandru‑Ionuț Chiuță (Ecoul Stringurilor), programador, autor de FC e músico. Mais ferramentas de ficheiro único, sem servidor e sem telemetria, em chiuta.github.io.',
+    tradeFreeH:'Trade‑free',
+    tradeFreeBody:'Esta ferramenta é oferecida livremente, no espírito do movimento trade‑free (TROM): sem anúncios, sem contas, sem rastreio. Os seus dados nunca saem do dispositivo.',
+    supportH:'Apoie o projeto', supportBody:'Se lhe for útil e quiser apoiar o trabalho, pode fazê‑lo aqui:',
+    patreon:'Patreon', bmc:'Buy Me a Coffee', contact:'Contacto', visitSite:'Site', closeLbl:'Fechar',
+    spec_html:`<p>O VaultCrypt usa apenas a <b>Web Crypto API</b> nativa do navegador — sem bibliotecas externas, sem chamadas de rede.</p>
+      <p><b>Selagem:</b> a sua palavra‑passe deriva uma chave AES‑256 via <code>PBKDF2‑HMAC‑SHA‑256</code> com um sal aleatório de 16 bytes. Os dados são cifrados com <code>AES‑256‑GCM</code> usando um IV aleatório de 12 bytes. O GCM também autentica: qualquer adulteração é detetada ao abrir. Os nomes dos ficheiros são cifrados com o conteúdo. Pode selar vários ficheiros num contentor.</p>
+      <p>Estrutura do contentor (<code>.vault</code> para ficheiros, bloco blindado para mensagens):</p>
+      <table><tr><td>0–5</td><td>assinatura "VCRYPT"</td></tr><tr><td>6</td><td>versão (2)</td></tr><tr><td>7–10</td><td>iterações PBKDF2 (uint32 BE)</td></tr><tr><td>11–26</td><td>sal (16 bytes aleatórios)</td></tr><tr><td>27–38</td><td>IV (12 bytes aleatórios)</td></tr><tr><td>39+</td><td>cifrado: [número de ficheiros] + entradas (nome + dados) + etiqueta GCM</td></tr></table>
+      <p>O cabeçalho em claro está ligado criptograficamente ao conteúdo (como <i>additional authenticated data</i>). Contentores antigos (v1) permanecem compatíveis.</p>
+      <p><b>Importante:</b> não há recuperação da palavra‑passe. Palavra‑passe perdida = dados irrecuperáveis.</p>`
+  }
+};
+const LANG_KEY='vaultcrypt.lang', SEC_KEY='vaultcrypt.sec';
+let LANG = (function(){ try{ return localStorage.getItem(LANG_KEY)||'en'; }catch(e){ return 'en'; } })();
+if(!I18N[LANG]) LANG='en';
+function T(k){ return (I18N[LANG] && I18N[LANG][k]!==undefined) ? I18N[LANG][k] : (I18N.en[k]!==undefined?I18N.en[k]:k); }
+function applyI18N(){
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ const k=el.getAttribute('data-i18n'); if(I18N[LANG][k]!==undefined) el.innerHTML=I18N[LANG][k]; });
+  const ls=document.getElementById('langsel'); if(ls) ls.value=LANG;
+  document.getElementById('spec-body').innerHTML = T('spec_html');
+  updateMeter(document.getElementById('seal-pass').value);
+  renderAudit(); regen();
+}
+function setLang(l){ if(!I18N[l]) return; LANG=l; try{localStorage.setItem(LANG_KEY,l);}catch(e){} applyI18N(); }
+
+/* ---------- 2. Helpers ---------- */
+const subtle = window.crypto.subtle;
+const MAGIC = [0x56,0x43,0x52,0x59,0x50,0x54];
+const VERSION = 2;
+const te = new TextEncoder(), td = new TextDecoder();
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function u32be(n){ return new Uint8Array([(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255]); }
+function readU32be(a,o){ return ((a[o]<<24)|(a[o+1]<<16)|(a[o+2]<<8)|a[o+3])>>>0; }
+function fmtSize(n){ if(n<1024)return n+' B'; if(n<1048576)return (n/1024).toFixed(1)+' KB'; if(n<1073741824)return (n/1048576).toFixed(2)+' MB'; return (n/1073741824).toFixed(2)+' GB'; }
+function bytesToB64(bytes){ let bin=''; const chunk=0x8000; for(let i=0;i<bytes.length;i+=chunk) bin+=String.fromCharCode.apply(null, bytes.subarray(i,i+chunk)); return btoa(bin); }
+function b64ToBytes(b64){ const bin=atob(b64); const out=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) out[i]=bin.charCodeAt(i); return out; }
+function toHex(buf){ const b=new Uint8Array(buf); let s=''; for(let i=0;i<b.length;i++) s+=b[i].toString(16).padStart(2,'0'); return s; }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2200); }
+
+/* ---------- 3. Core crypto ---------- */
+async function deriveKey(pass, salt, iterations){
+  const base = await subtle.importKey('raw', te.encode(pass), 'PBKDF2', false, ['deriveKey']);
+  return subtle.deriveKey({ name:'PBKDF2', salt, iterations, hash:'SHA-256' }, base, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']);
+}
+function buildPayloadV2(items){
+  let total=2; for(const it of items){ const nb=te.encode(it.name); total+=2+nb.length+4+it.bytes.length; }
+  const pl=new Uint8Array(total); let o=0;
+  pl[0]=(items.length>>8)&255; pl[1]=items.length&255; o=2;
+  for(const it of items){
+    const nb=te.encode(it.name);
+    pl[o]=(nb.length>>8)&255; pl[o+1]=nb.length&255; o+=2;
+    pl.set(nb,o); o+=nb.length;
+    pl[o]=(it.bytes.length>>>24)&255; pl[o+1]=(it.bytes.length>>>16)&255; pl[o+2]=(it.bytes.length>>>8)&255; pl[o+3]=it.bytes.length&255; o+=4;
+    pl.set(it.bytes,o); o+=it.bytes.length;
+  }
+  return pl;
+}
+function parsePayload(ver, pt){
+  if(ver===1){ const nl=(pt[0]<<8)|pt[1]; return [{ name:td.decode(pt.slice(2,2+nl)), data:pt.slice(2+nl) }]; }
+  const count=(pt[0]<<8)|pt[1]; let o=2; const entries=[];
+  for(let i=0;i<count;i++){
+    const nl=(pt[o]<<8)|pt[o+1]; o+=2;
+    const name=td.decode(pt.slice(o,o+nl)); o+=nl;
+    const dl=readU32be(pt,o); o+=4;
+    entries.push({ name, data:pt.slice(o,o+dl) }); o+=dl;
+  }
+  return entries;
+}
+async function seal(items, pass, iterations){
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv   = crypto.getRandomValues(new Uint8Array(12));
+  const header = new Uint8Array(39);
+  header.set(MAGIC,0); header[6]=VERSION; header.set(u32be(iterations),7); header.set(salt,11); header.set(iv,27);
+  const key = await deriveKey(pass, salt, iterations);
+  const payload = buildPayloadV2(items);
+  const ct = new Uint8Array(await subtle.encrypt({name:'AES-GCM', iv, additionalData:header}, key, payload));
+  const out = new Uint8Array(header.length + ct.length);
+  out.set(header,0); out.set(ct, header.length);
+  return out;
+}
+async function unseal(container, pass){
+  if(container.length < 39){ const e=new Error('short'); e.code='BAD'; throw e; }
+  for(let i=0;i<6;i++) if(container[i]!==MAGIC[i]){ const e=new Error('magic'); e.code='BAD'; throw e; }
+  const ver=container[6];
+  if(ver!==1 && ver!==2){ const e=new Error('version'); e.code='BAD'; throw e; }
+  const iterations = readU32be(container,7);
+  const salt=container.slice(11,27), iv=container.slice(27,39), header=container.slice(0,39), ct=container.slice(39);
+  const key = await deriveKey(pass, salt, iterations);
+  const pt = new Uint8Array(await subtle.decrypt({name:'AES-GCM', iv, additionalData:header}, key, ct));
+  return { ver, iterations, entries:parsePayload(ver, pt) };
+}
+
+/* ---------- 4. Armor ---------- */
+const ARMOR_BEGIN='-----BEGIN VAULTCRYPT MESSAGE-----';
+const ARMOR_END='-----END VAULTCRYPT MESSAGE-----';
+function armor(container){ const b64=bytesToB64(container); const lines=b64.match(/.{1,64}/g).join('\n'); return ARMOR_BEGIN+'\n'+lines+'\n'+ARMOR_END; }
+function dearmor(text){
+  const i=text.indexOf(ARMOR_BEGIN), j=text.indexOf(ARMOR_END);
+  let b64 = (i!==-1 && j!==-1 && j>i) ? text.slice(i+ARMOR_BEGIN.length, j) : text;
+  b64=b64.replace(/[^A-Za-z0-9+/=]/g,'');
+  if(!b64){ const e=new Error('armor'); e.code='ARMOR'; throw e; }
+  return b64ToBytes(b64);
+}
+
+/* ---------- 5. ZIP store + CRC32 ---------- */
+function crc32(buf){ let c=~0; for(let i=0;i<buf.length;i++){ c^=buf[i]; for(let k=0;k<8;k++) c=(c>>>1)^(0xEDB88320 & -(c&1)); } return (~c)>>>0; }
+function catU8(arrs){ let n=0; for(const a of arrs)n+=a.length; const o=new Uint8Array(n); let p=0; for(const a of arrs){o.set(a,p);p+=a.length;} return o; }
+function _u16(n){ return new Uint8Array([n&255,(n>>8)&255]); }
+function _u32(n){ return new Uint8Array([n&255,(n>>8)&255,(n>>16)&255,(n>>>24)&255]); }
+function makeZip(files){
+  const DOSTIME=_u16(0), DOSDATE=_u16(((2021-1980)<<9)|(1<<5)|1);
+  const chunks=[], central=[]; let offset=0;
+  const push=u=>{ chunks.push(u); offset+=u.length; };
+  for(const f of files){
+    const nameB=te.encode(f.name); const crc=crc32(f.bytes); const size=f.bytes.length; const lo=offset;
+    push(catU8([_u32(0x04034b50),_u16(20),_u16(0),_u16(0),DOSTIME,DOSDATE,_u32(crc),_u32(size),_u32(size),_u16(nameB.length),_u16(0),nameB]));
+    push(f.bytes);
+    central.push(catU8([_u32(0x02014b50),_u16(20),_u16(20),_u16(0),_u16(0),DOSTIME,DOSDATE,_u32(crc),_u32(size),_u32(size),_u16(nameB.length),_u16(0),_u16(0),_u16(0),_u16(0),_u32(0),_u32(lo),nameB]));
+  }
+  const cdStart=offset; let cdSize=0; for(const c of central){ push(c); cdSize+=c.length; }
+  push(catU8([_u32(0x06054b50),_u16(0),_u16(0),_u16(files.length),_u16(files.length),_u32(cdSize),_u32(cdStart),_u16(0)]));
+  return catU8(chunks);
+}
+
+/* ---------- 6. UI state ---------- */
+let sealMode='file', unsealMode='file';
+let sealFiles=[]; let unsealFile=null; let ckFile=null; let lastSealBlob=null;
+function showTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on', t.dataset.tab===name));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on', v.id==='view-'+name));
+}
+function clearOut(id){ const o=document.getElementById(id); o.classList.remove('on'); o.innerHTML=''; }
+function setSealSrc(m){
+  sealMode=m;
+  document.querySelectorAll('#seal-src button').forEach(b=>b.classList.toggle('on', b.dataset.src===m));
+  document.getElementById('seal-file-wrap').style.display = m==='file'?'block':'none';
+  document.getElementById('seal-text-wrap').style.display = m==='text'?'block':'none';
+  clearOut('seal-out');
+}
+function setUnsealSrc(m){
+  unsealMode=m;
+  document.querySelectorAll('#unseal-src button').forEach(b=>b.classList.toggle('on', b.dataset.src===m));
+  document.getElementById('unseal-file-wrap').style.display = m==='file'?'block':'none';
+  document.getElementById('unseal-text-wrap').style.display = m==='text'?'block':'none';
+  clearOut('unseal-out');
+}
+function togglePw(id, btn){ const el=document.getElementById(id); el.type=el.type==='password'?'text':'password'; btn.style.color=el.type==='text'?'var(--brass-2)':''; }
+
+/* ---------- 7. File pickers + drop zones ---------- */
+function renderSealChips(){
+  const box=document.getElementById('seal-file-chip');
+  if(!sealFiles.length){ box.innerHTML=''; return; }
+  box.innerHTML = sealFiles.map((f,i)=>'<div class="filechip"><span class="nm">'+escapeHtml(f.name)+'</span><span class="sz">'+fmtSize(f.bytes.length)+'</span><button class="x" data-i="'+i+'" title="'+T('chip_remove')+'">✕</button></div>').join('');
+  box.querySelectorAll('.x').forEach(b=>b.onclick=()=>{ sealFiles.splice(parseInt(b.dataset.i,10),1); renderSealChips(); });
+}
+function wireDrop(dropId, inputId, onFiles, multi){
+  const drop=document.getElementById(dropId), input=document.getElementById(inputId);
+  drop.addEventListener('click',()=>input.click());
+  drop.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();input.click();} });
+  ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('hot');}));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('hot');}));
+  drop.addEventListener('drop',e=>{ const fs=e.dataTransfer.files; if(fs&&fs.length) readFiles(multi?Array.from(fs):[fs[0]], onFiles); });
+  input.addEventListener('change',e=>{ const fs=e.target.files; if(fs&&fs.length) readFiles(multi?Array.from(fs):[fs[0]], onFiles); input.value=''; });
+}
+function readFiles(fileList, cb){
+  const results=[]; let pending=fileList.length, failed=false;
+  fileList.forEach((f,idx)=>{
+    const r=new FileReader();
+    r.onload=()=>{ results[idx]={name:f.name, bytes:new Uint8Array(r.result)}; if(--pending===0 && !failed) cb(results); };
+    r.onerror=()=>{ if(!failed){ failed=true; toast(T('err_read')); } };
+    r.readAsArrayBuffer(f);
+  });
+}
+
+/* ---------- 8. SEAL ---------- */
+function status(html, cls){ return '<div class="status '+cls+'">'+html+'</div>'; }
+function wipeIf(prefix){ if(document.getElementById(prefix+'-wipe').checked){ document.getElementById(prefix+'-pass').value=''; const p2=document.getElementById(prefix+'-pass2'); if(p2)p2.value=''; if(prefix==='seal') updateMeter(''); } }
+async function doSeal(){
+  const out=document.getElementById('seal-out');
+  const pass=document.getElementById('seal-pass').value;
+  const pass2=document.getElementById('seal-pass2').value;
+  out.classList.add('on');
+  let items;
+  if(sealMode==='file'){
+    if(!sealFiles.length){ out.innerHTML=status(T('err_nofile'),'bad'); return; }
+    items=sealFiles;
+  }else{
+    const txt=document.getElementById('seal-text').value;
+    if(!txt){ out.innerHTML=status(T('err_notext'),'bad'); return; }
+    items=[{name:'', bytes:te.encode(txt)}];
+  }
+  if(!pass){ out.innerHTML=status(T('err_pass'),'bad'); return; }
+  if(pass.length<4){ out.innerHTML=status(T('err_passshort'),'bad'); return; }
+  if(pass!==pass2){ out.innerHTML=status(T('err_passmatch'),'bad'); return; }
+  const iter=parseInt(document.getElementById('seal-iter').value,10);
+  try{ localStorage.setItem(SEC_KEY,String(iter)); }catch(e){}
+  const btn=document.getElementById('seal-go'); btn.disabled=true;
+  out.innerHTML=status('⏳ '+T('sealing'),'info');
+  await new Promise(r=>setTimeout(r,30));
+  try{
+    const container=await seal(items, pass, iter);
+    if(sealMode==='file'){
+      lastSealBlob=new Blob([container], {type:'application/octet-stream'});
+      const dlName = items.length===1 ? (items[0].name||'data')+'.vault' : 'vaultcrypt-bundle.vault';
+      const okMsg = items.length===1 ? T('seal_ok_file') : (items.length+' '+T('seal_ok_multi'));
+      out.innerHTML = status('✓ '+okMsg,'ok') + '<div class="hint">'+T('size_label')+': <code>'+fmtSize(container.length)+'</code> · '+T('iter_label')+': <code>'+iter.toLocaleString()+'</code></div>';
+      const a=document.createElement('button'); a.className='btn full'; a.style.marginTop='14px'; a.innerHTML='⬇ '+T('dl_vault');
+      a.onclick=()=>downloadBlob(lastSealBlob, dlName); out.appendChild(a);
+    }else{
+      const armored=armor(container);
+      out.innerHTML = status('✓ '+T('seal_ok_text'),'ok') + '<textarea class="armor" readonly>'+escapeHtml(armored)+'</textarea>';
+      const a=document.createElement('button'); a.className='btn full'; a.style.marginTop='12px'; a.innerHTML='⧉ '+T('copy_armor');
+      a.onclick=()=>copyText(armored,a); out.appendChild(a);
+    }
+    wipeIf('seal');
+  }catch(err){ out.innerHTML=status('✗ '+escapeHtml(err.message||'error'),'bad'); }
+  finally{ btn.disabled=false; }
+}
+
+/* ---------- 9. UNSEAL ---------- */
+async function doUnseal(){
+  const out=document.getElementById('unseal-out');
+  const pass=document.getElementById('unseal-pass').value;
+  out.classList.add('on');
+  let container;
+  try{
+    if(unsealMode==='file'){
+      if(!unsealFile){ out.innerHTML=status(T('err_nofile'),'bad'); return; }
+      container=unsealFile.bytes;
+    }else{
+      const txt=document.getElementById('unseal-text').value;
+      if(!txt.trim()){ out.innerHTML=status(T('err_notext'),'bad'); return; }
+      container=dearmor(txt);
+    }
+  }catch(e){ out.innerHTML=status(T('err_armor'),'bad'); return; }
+  if(!pass){ out.innerHTML=status(T('err_pass'),'bad'); return; }
+  let okMagic=container.length>=39; for(let i=0;okMagic&&i<6;i++) if(container[i]!==MAGIC[i]) okMagic=false;
+  if(!okMagic){ out.innerHTML=status(T('err_badcontainer'),'bad'); return; }
+  const btn=document.getElementById('unseal-go'); btn.disabled=true;
+  out.innerHTML=status('⏳ '+T('unsealing'),'info');
+  await new Promise(r=>setTimeout(r,30));
+  try{
+    const res=await unseal(container, pass);
+    const entries=res.entries;
+    const isText = entries.length===1 && entries[0].name==='';
+    if(isText){
+      const text=td.decode(entries[0].data);
+      out.innerHTML = status('✓ '+T('unseal_ok_text'),'ok') + '<textarea class="armor" readonly style="color:var(--ink)">'+escapeHtml(text)+'</textarea>';
+      const c=document.createElement('button'); c.className='btn ghost full'; c.style.marginTop='12px'; c.innerHTML='⧉ '+T('copy');
+      c.onclick=()=>copyText(text,c); out.appendChild(c);
+      const d=document.createElement('button'); d.className='btn ghost full'; d.style.marginTop='8px'; d.innerHTML='⬇ '+T('dl_txt');
+      d.onclick=()=>downloadBlob(new Blob([entries[0].data],{type:'text/plain'}), 'message.txt'); out.appendChild(d);
+    }else if(entries.length===1){
+      const e0=entries[0];
+      out.innerHTML = status('✓ '+T('unseal_ok_file'),'ok') + '<div class="filechip"><span class="nm">'+escapeHtml(e0.name)+'</span><span class="sz">'+fmtSize(e0.data.length)+'</span></div>';
+      const a=document.createElement('button'); a.className='btn full'; a.style.marginTop='14px'; a.innerHTML='⬇ '+T('dl_orig');
+      a.onclick=()=>downloadBlob(new Blob([e0.data],{type:'application/octet-stream'}), e0.name); out.appendChild(a);
+    }else{
+      out.innerHTML = status('✓ '+entries.length+' '+T('unseal_ok_multi'),'ok');
+      const list=document.createElement('div');
+      entries.forEach((e,i)=>{
+        const row=document.createElement('div'); row.className='filechip';
+        row.innerHTML='<span class="nm">'+escapeHtml(e.name||('file_'+(i+1)))+'</span><span class="sz">'+fmtSize(e.data.length)+'</span>';
+        const b=document.createElement('button'); b.className='dl'; b.textContent='⬇ '+T('dl_one');
+        b.onclick=()=>downloadBlob(new Blob([e.data],{type:'application/octet-stream'}), e.name||('file_'+(i+1))); row.appendChild(b);
+        list.appendChild(row);
+      });
+      out.appendChild(list);
+      const all=document.createElement('button'); all.className='btn full'; all.style.marginTop='14px'; all.innerHTML='⬇ '+T('dl_all_zip');
+      all.onclick=()=>{ const zip=makeZip(entries.map(e=>({name:e.name||'file', bytes:e.data}))); downloadBlob(new Blob([zip],{type:'application/zip'}), 'vaultcrypt-files.zip'); };
+      out.appendChild(all);
+    }
+    wipeIf('unseal');
+  }catch(err){ out.innerHTML=status('✗ '+T('err_unseal'),'bad'); }
+  finally{ btn.disabled=false; }
+}
+function downloadBlob(blob, name){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },1500);
+}
+async function copyText(text, btn){
+  try{
+    if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); }
+    else{ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+    toast(T('copied'));
+  }catch(e){ toast(T('copyfail')); }
+}
+
+/* ---------- 10. Strength meter + crack-time ---------- */
+function estimateBits(pw){
+  if(!pw) return 0;
+  let pool=0;
+  if(/[a-z]/.test(pw)) pool+=26;
+  if(/[A-Z]/.test(pw)) pool+=26;
+  if(/[0-9]/.test(pw)) pool+=10;
+  if(/[^a-zA-Z0-9]/.test(pw)) pool+=33;
+  let bits=pw.length*Math.log2(pool||1);
+  const uniq=new Set(pw).size;
+  if(uniq<=pw.length*0.5) bits*=0.7;
+  if(/(.)\1\1/.test(pw)) bits*=0.8;
+  if(/0123|1234|2345|abcd|qwer|asdf/i.test(pw)) bits*=0.7;
+  return Math.round(bits);
+}
+function meterClass(bits){
+  if(bits<28) return {k:'ms_vweak', c:'#d4664a', w:14};
+  if(bits<40) return {k:'ms_weak', c:'#e0a458', w:32};
+  if(bits<56) return {k:'ms_fair', c:'#e0c258', w:52};
+  if(bits<72) return {k:'ms_good', c:'#a8c95a', w:72};
+  if(bits<96) return {k:'ms_strong', c:'#7fb069', w:88};
+  return {k:'ms_excellent', c:'#5fb84e', w:100};
+}
+function niceNum(n){ if(n<1000) return (Math.round(n*10)/10).toString(); if(n<1e6) return Math.round(n).toLocaleString(); return n.toExponential(1); }
+function crackTime(bits){
+  if(bits<=0) return '';
+  if(bits>=128) return T('ct_prefix')+' '+T('ct_eternal');
+  const rate=1e11;
+  const seconds=Math.pow(2, bits-1)/rate;
+  let n, u;
+  if(seconds<1){ return T('ct_prefix')+' '+T('u_instant'); }
+  else if(seconds<60){ n=seconds; u='u_sec'; }
+  else if(seconds<3600){ n=seconds/60; u='u_min'; }
+  else if(seconds<86400){ n=seconds/3600; u='u_hour'; }
+  else if(seconds<31536000){ n=seconds/86400; u='u_day'; }
+  else if(seconds<31536000*100){ n=seconds/31536000; u='u_year'; }
+  else { n=seconds/(31536000*100); u='u_century'; if(n>1e9) return T('ct_prefix')+' '+T('ct_eternal'); }
+  return T('ct_prefix')+' ≈ '+niceNum(n)+' '+T(u);
+}
+function updateMeter(pw){
+  const bits=estimateBits(pw);
+  const lbl=document.getElementById('seal-meter-label'), bar=document.getElementById('seal-meter'), bt=document.getElementById('seal-meter-bits'), ct=document.getElementById('seal-meter-ct');
+  if(!pw){ lbl.textContent=T('ms_empty'); lbl.style.color=''; bar.style.width='0%'; bt.textContent=''; ct.textContent=''; return; }
+  const m=meterClass(bits);
+  bar.style.width=m.w+'%'; bar.style.background=m.c;
+  lbl.innerHTML='<b style="color:'+m.c+'">'+T(m.k)+'</b>'; bt.textContent='~'+bits+' bits';
+  ct.textContent=crackTime(bits);
+}
+
+/* ---------- 11. Passphrase generator ---------- */
+let genMode='rand';
+const WORDS = ("able acid acorn amber anchor apple arrow autumn axis baker basil beacon birch bishop blossom bottle branch brave bridge bronze candle canyon carbon cedar cherry cipher cliff clover cobalt comet copper coral cosmos cotton cradle crane crater crimson crystal dawn delta desert diamond drift ember emerald falcon feather fern fiber flint forest fox garnet glacier granite harbor hazel heron honey indigo island ivory jade jasmine jungle juniper kernel lagoon lantern laurel ledge lemon lily linen lotus lunar maple marble meadow meteor mineral mint mirror mist moss nebula nectar oak ocean olive onyx opal orbit orchid osprey otter pearl pebble petal pewter pine plum pollen poplar prairie prism quartz quiver radiant raven reed ridge river robin rowan ruby sable sage salmon sapphire sequoia shadow shale shore silver slate snow solar spark sparrow spruce stone storm stream summit thistle thunder tide timber topaz tulip tundra valley velvet vine violet walnut willow winter wren zenith zephyr").split(" ");
+function setGenMode(m){
+  genMode=m;
+  document.querySelectorAll('#gen-mode button').forEach(b=>b.classList.toggle('on', b.dataset.m===m));
+  document.getElementById('gen-rand-opts').style.display = m==='rand'?'block':'none';
+  document.getElementById('gen-words-opts').style.display = m==='words'?'block':'none';
+  regen();
+}
+function randInt(max){ const a=new Uint32Array(1); const limit=Math.floor(0xFFFFFFFF/max)*max; let x; do{ crypto.getRandomValues(a); x=a[0]; }while(x>=limit); return x%max; }
+function regen(){
+  const out=document.getElementById('gen-out'); const bitsEl=document.getElementById('gen-bits'); if(!out) return;
+  if(genMode==='rand'){
+    let pool='';
+    if(document.getElementById('g-lower').checked) pool+='abcdefghijklmnopqrstuvwxyz';
+    if(document.getElementById('g-upper').checked) pool+='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if(document.getElementById('g-dig').checked)   pool+='0123456789';
+    if(document.getElementById('g-sym').checked)   pool+='!@#$%^&*()-_=+[]{};:,.?';
+    if(!pool){ out.textContent='—'; bitsEl.textContent=''; return; }
+    const len=parseInt(document.getElementById('gen-len').value,10);
+    let s=''; for(let i=0;i<len;i++) s+=pool[randInt(pool.length)];
+    out.textContent=s; bitsEl.textContent='~'+Math.round(len*Math.log2(pool.length))+' bits';
+  }else{
+    const n=parseInt(document.getElementById('gen-nw').value,10);
+    const parts=[]; for(let i=0;i<n;i++) parts.push(WORDS[randInt(WORDS.length)]);
+    out.textContent=parts.join('-'); bitsEl.textContent='~'+Math.round(n*Math.log2(WORDS.length))+' bits';
+  }
+}
+function useGenerated(){
+  const pw=document.getElementById('gen-out').textContent;
+  if(!pw||pw==='—') return;
+  document.getElementById('seal-pass').value=pw; document.getElementById('seal-pass2').value=pw; updateMeter(pw);
+  showTab('seal'); setSealSrc(sealMode); toast(T('used_pass'));
+}
+
+/* ---------- 12. Checksum tool ---------- */
+async function computeChecksum(){
+  if(!ckFile) return;
+  const algo=document.getElementById('ck-algo').value;
+  const box=document.getElementById('ck-result');
+  box.innerHTML='<div class="hint">⏳ '+T('ck_computing')+'</div>';
+  try{
+    const digest=await subtle.digest(algo, ckFile.bytes);
+    const hex=toHex(digest);
+    box.innerHTML='<div class="filechip"><span class="nm">'+escapeHtml(ckFile.name)+'</span><span class="sz">'+fmtSize(ckFile.bytes.length)+'</span></div>'
+      +'<div class="ck-hash">'+algo+'<br>'+hex+'</div>';
+    const b=document.createElement('button'); b.className='btn ghost'; b.style.marginTop='10px'; b.textContent='⧉ '+T('ck_copy');
+    b.onclick=()=>copyText(hex,b); box.appendChild(b);
+  }catch(e){ box.innerHTML='<div class="status bad">✗ '+escapeHtml(e.message)+'</div>'; }
+}
+
+/* ---------- 13. Self-test ---------- */
+async function selfTest(){
+  const out=document.getElementById('st-out');
+  const labels=['st_l1','st_l2','st_l3','st_l4','st_l5','st_l6','st_l7'];
+  const results=[];
+  try{
+    const msg='Test ăâîșț 🔐 — VaultCrypt';
+    const c1=await seal([{name:'',bytes:te.encode(msg)}],'pw-test-123',50000);
+    const r1=await unseal(c1,'pw-test-123');
+    results.push(r1.entries.length===1 && r1.entries[0].name==='' && td.decode(r1.entries[0].data)===msg);
+
+    const bin=crypto.getRandomValues(new Uint8Array(2048));
+    const c2=await seal([{name:'x.bin',bytes:bin}],'pw-test-123',50000);
+    const r2=await unseal(c2,'pw-test-123');
+    let same=r2.entries[0].name==='x.bin' && r2.entries[0].data.length===bin.length;
+    for(let i=0;same&&i<bin.length;i++) if(bin[i]!==r2.entries[0].data[i]) same=false;
+    results.push(same);
+
+    const cm=await seal([{name:'a.txt',bytes:te.encode('alpha')},{name:'b.dat',bytes:new Uint8Array([1,2,3,4,5])}],'pw-test-123',50000);
+    const rm=await unseal(cm,'pw-test-123');
+    results.push(rm.entries.length===2 && rm.entries[0].name==='a.txt' && td.decode(rm.entries[0].data)==='alpha' && rm.entries[1].data.length===5);
+
+    let rej=false; try{ await unseal(c2,'nope'); }catch(e){ rej=true; } results.push(rej);
+    const c3=c2.slice(); c3[c3.length-1]^=1; let tt=false; try{ await unseal(c3,'pw-test-123'); }catch(e){ tt=true; } results.push(tt);
+    const c4=c2.slice(); c4[10]^=1; let hh=false; try{ await unseal(c4,'pw-test-123'); }catch(e){ hh=true; } results.push(hh);
+
+    // v1 backward-compat: build a v1 container manually
+    const salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12));
+    const h=new Uint8Array(39); h.set(MAGIC,0); h[6]=1; h.set(u32be(50000),7); h.set(salt,11); h.set(iv,27);
+    const key=await deriveKey('pw-test-123',salt,50000);
+    const nb=te.encode('legacy.dat'); const data=te.encode('old-data');
+    const pl=new Uint8Array(2+nb.length+data.length); pl[0]=(nb.length>>8)&255; pl[1]=nb.length&255; pl.set(nb,2); pl.set(data,2+nb.length);
+    const ct=new Uint8Array(await subtle.encrypt({name:'AES-GCM',iv,additionalData:h},key,pl));
+    const v1=new Uint8Array(h.length+ct.length); v1.set(h,0); v1.set(ct,h.length);
+    const rv1=await unseal(v1,'pw-test-123');
+    results.push(rv1.ver===1 && rv1.entries[0].name==='legacy.dat' && td.decode(rv1.entries[0].data)==='old-data');
+  }catch(e){ /* leave */ }
+  const allPass=results.length===7 && results.every(Boolean);
+  let html=status((allPass?'✓ ':'✗ ')+(allPass?T('st_pass'):T('st_fail')), allPass?'ok':'bad');
+  html+='<div class="hint" style="font-family:var(--mono)">';
+  labels.forEach((k,i)=>{ html+=(results[i]?'✓ ':'✗ ')+T(k)+'<br>'; });
+  html+='</div>';
+  out.innerHTML=html;
+}
+
+/* ---------- 14. Init ---------- */
+wireDrop('seal-drop','seal-file-input', fs=>{ sealFiles=sealFiles.concat(fs); renderSealChips(); clearOut('seal-out'); }, true);
+wireDrop('unseal-drop','unseal-file-input', fs=>{
+  unsealFile=fs[0];
+  const box=document.getElementById('unseal-file-chip');
+  box.innerHTML='<div class="filechip"><span class="nm">'+escapeHtml(unsealFile.name)+'</span><span class="sz">'+fmtSize(unsealFile.bytes.length)+'</span><button class="x" title="'+T('chip_remove')+'">✕</button></div>';
+  box.querySelector('.x').onclick=()=>{ unsealFile=null; box.innerHTML=''; };
+  clearOut('unseal-out');
+}, false);
+wireDrop('ck-drop','ck-input', fs=>{ ckFile=fs[0]; computeChecksum(); }, false);
+
+document.getElementById('seal-pass').addEventListener('input', e=>updateMeter(e.target.value));
+
+// About modal
+const _am=document.getElementById('aboutModal');
+document.getElementById('aboutBtn').onclick=()=>_am.classList.add('show');
+document.getElementById('aboutClose').onclick=()=>_am.classList.remove('show');
+_am.addEventListener('click',e=>{ if(e.target===_am) _am.classList.remove('show'); });
+
+// Keyboard: Esc closes modal; Ctrl/Cmd+Enter triggers active action
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){ _am.classList.remove('show'); }
+  if((e.ctrlKey||e.metaKey) && e.key==='Enter'){
+    if(document.getElementById('view-seal').classList.contains('on')) doSeal();
+    else if(document.getElementById('view-unseal').classList.contains('on')) doUnseal();
+  }
+});
+
+// Restore persisted security level
+try{ const s=localStorage.getItem(SEC_KEY); if(s){ const sel=document.getElementById('seal-iter'); if([...sel.options].some(o=>o.value===s)) sel.value=s; } }catch(e){}
+
+applyI18N();
+renderAudit();
+
+</script>
+</body>
+</html>

@@ -964,9 +964,18 @@ async function unseal(container, pass){
   const ver=container[6];
   if(ver!==1 && ver!==2){ const e=new Error('version'); e.code='BAD'; throw e; }
   const iterations = readU32be(container,7);
+  // L3: reject absurd iteration counts from a malicious container (max UI option is 1,000,000).
+  // Without this, a crafted header could force the browser to hang deriving the key (local DoS).
+  if(iterations < 1 || iterations > 10000000){ const e=new Error('kdf'); e.code='BAD'; throw e; }
   const salt=container.slice(11,27), iv=container.slice(27,39), header=container.slice(0,39), ct=container.slice(39);
   const key = await deriveKey(pass, salt, iterations);
-  const pt = new Uint8Array(await subtle.decrypt({name:'AES-GCM', iv, additionalData:header}, key, ct));
+  let pt;
+  try {
+    pt = new Uint8Array(await subtle.decrypt({name:'AES-GCM', iv, additionalData:header}, key, ct));
+  } catch(_) {
+    // GCM auth failure is ambiguous: wrong passphrase OR corrupted/tampered file.
+    const e=new Error('auth'); e.code='AUTH'; throw e;
+  }
   return { ver, iterations, entries:parsePayload(ver, pt) };
 }
 

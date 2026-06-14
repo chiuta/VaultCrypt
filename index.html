@@ -1,6 +1,32 @@
 <!DOCTYPE html>
+<!--
+  ============================================================================
+  VaultCrypt
+  Autor: Alexandru-Ionuț Chiuță (Alexio · „Ecoul Stringurilor")
+  Aplicație single-file, offline-first, fără telemetrie.
+
+  LICENȚĂ — TRADE-FREE + CC0 1.0 (Public Domain Dedication)
+  Oferită liber, fără troc, în spiritul mișcării TROM (trom.tf). În măsura
+  permisă de lege, autorul renunță la drepturile de autor și dedică lucrarea
+  domeniului public: https://creativecommons.org/publicdomain/zero/1.0/
+  Poți folosi, copia, modifica și redistribui liber, în orice scop.
+
+  Sprijin voluntar (opțional, niciodată obligatoriu):
+    Patreon:         https://www.patreon.com/c/alexio_tf
+    Buy Me a Coffee: https://buymeacoffee.com/echo.of.the.strings
+  ============================================================================
+-->
 <html lang="en">
 <head>
+<style id="tf-a11y-motion">
+/* Accesibilitate: respectă preferința utilizatorului pentru mai puțină mișcare (TROM/a11y). */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+
+/* Accesibilitate: inel de focus vizibil pentru navigare la tastatură. */
+:focus-visible{outline:2px solid #4a90d9;outline-offset:2px;border-radius:2px}
+</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VaultCrypt — in-browser encryption</title>
@@ -283,7 +309,7 @@
           <label class="l" data-i18n="lbl_sec">Security level (PBKDF2)</label>
           <select class="lvl" id="seal-iter">
             <option value="310000" data-i18n="sec_bal">Balanced — 310,000 iterations</option>
-            <option value="600000" data-i18n="sec_high">High — 600,000 iterations</option>
+            <option value="600000" data-i18n="sec_high" selected>High — 600,000 iterations</option>
             <option value="1000000" data-i18n="sec_para">Paranoid — 1,000,000 iterations</option>
           </select>
         </div>
@@ -426,7 +452,7 @@
       <p data-i18n="supportBody"></p>
       <div class="support-links">
         <a class="slink patreon" href="https://www.patreon.com/c/alexio_tf" target="_blank" rel="noopener" data-i18n="patreon">Patreon</a>
-        <a class="slink bmc" href="https://www.buymeacoffee.com/alexio" target="_blank" rel="noopener" data-i18n="bmc">Buy Me a Coffee</a>
+        <a class="slink bmc" href="https://buymeacoffee.com/echo.of.the.strings" target="_blank" rel="noopener" data-i18n="bmc">Buy Me a Coffee</a>
       </div>
     </div>
   </div>

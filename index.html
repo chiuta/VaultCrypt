@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<meta charset="UTF-8">
 <!--
   ============================================================================
   VaultCrypt
@@ -27,7 +28,6 @@
 /* Accesibilitate: inel de focus vizibil pentru navigare la tastatură. */
 :focus-visible{outline:2px solid #4a90d9;outline-offset:2px;border-radius:2px}
 </style>
-<meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; script-src 'self' 'unsafe-inline' blob:; connect-src 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VaultCrypt — in-browser encryption</title>
@@ -279,7 +279,7 @@
         <button data-src="text" onclick="setSealSrc('text')" data-i18n="src_text">Text</button>
       </div>
       <div id="seal-file-wrap">
-        <div class="drop" id="seal-drop" tabindex="0">
+        <div class="drop" id="seal-drop" tabindex="0" role="button">
           <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#caa15a" stroke-width="1.4"><path d="M12 16V4m0 0L8 8m4-4l4 4"/><path d="M3 15v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4"/></svg>
           <div class="big" data-i18n="drop_seal">Drop files here or click to choose</div>
           <div class="sub" data-i18n="drop_seal_sub">Any file type · multiple files allowed · processed locally</div>
@@ -288,11 +288,11 @@
         <div id="seal-file-chip"></div>
       </div>
       <div id="seal-text-wrap" style="display:none">
-        <label class="l" data-i18n="lbl_msg">Message to seal</label>
+        <label class="l" for="seal-text" data-i18n="lbl_msg">Message to seal</label>
         <textarea id="seal-text" placeholder=""></textarea>
       </div>
       <div class="field" style="margin-top:18px">
-        <label class="l" data-i18n="lbl_pass">Passphrase</label>
+        <label class="l" for="seal-pass" data-i18n="lbl_pass">Passphrase</label>
         <div class="pwrow">
           <input type="password" id="seal-pass" autocomplete="new-password" spellcheck="false">
           <button class="eye" onclick="togglePw('seal-pass',this)" aria-label="show">👁</button>
@@ -302,12 +302,12 @@
         <div class="crackline" id="seal-meter-ct"></div>
       </div>
       <div class="field pwrow">
-        <label class="l" data-i18n="lbl_pass2">Confirm passphrase</label>
+        <label class="l" for="seal-pass2" data-i18n="lbl_pass2">Confirm passphrase</label>
         <input type="password" id="seal-pass2" autocomplete="new-password" spellcheck="false">
       </div>
       <div class="row">
         <div class="field">
-          <label class="l" data-i18n="lbl_sec">Security level (PBKDF2)</label>
+          <label class="l" for="seal-iter" data-i18n="lbl_sec">Security level (PBKDF2)</label>
           <select class="lvl" id="seal-iter">
             <option value="310000" data-i18n="sec_bal">Balanced — 310,000 iterations</option>
             <option value="600000" data-i18n="sec_high" selected>High — 600,000 iterations</option>
@@ -334,7 +334,7 @@
         <button data-src="text" onclick="setUnsealSrc('text')" data-i18n="usrc_text">Armored message</button>
       </div>
       <div id="unseal-file-wrap">
-        <div class="drop" id="unseal-drop" tabindex="0">
+        <div class="drop" id="unseal-drop" tabindex="0" role="button">
           <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#caa15a" stroke-width="1.4"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
           <div class="big" data-i18n="drop_unseal">Drop a .vault file here or click to choose</div>
           <div class="sub" data-i18n="drop_unseal_sub">Only containers created by VaultCrypt</div>
@@ -343,11 +343,11 @@
         <div id="unseal-file-chip"></div>
       </div>
       <div id="unseal-text-wrap" style="display:none">
-        <label class="l" data-i18n="lbl_armor">Paste the armored block</label>
+        <label class="l" for="unseal-text" data-i18n="lbl_armor">Paste the armored block</label>
         <textarea id="unseal-text" class="armor" placeholder="-----BEGIN VAULTCRYPT MESSAGE-----&#10;…&#10;-----END VAULTCRYPT MESSAGE-----"></textarea>
       </div>
       <div class="field pwrow" style="margin-top:18px">
-        <label class="l" data-i18n="lbl_pass">Passphrase</label>
+        <label class="l" for="unseal-pass" data-i18n="lbl_pass">Passphrase</label>
         <div class="pwrow">
           <input type="password" id="unseal-pass" autocomplete="off" spellcheck="false">
           <button class="eye" onclick="togglePw('unseal-pass',this)" aria-label="show">👁</button>
@@ -381,8 +381,8 @@
           </div>
         </div>
         <div id="gen-words-opts" style="display:none">
-          <label class="l"><span data-i18n="gen_nwords">Word count</span>: <span id="gen-nw-val" class="small">6</span></label>
-          <div class="rangewrap"><input type="range" id="gen-nw" min="3" max="12" value="6" oninput="document.getElementById('gen-nw-val').textContent=this.value;regen()"></div>
+          <label class="l"><span data-i18n="gen_nwords">Word count</span>: <span id="gen-nw-val" class="small">10</span></label>
+          <div class="rangewrap"><input type="range" id="gen-nw" min="3" max="12" value="10" oninput="document.getElementById('gen-nw-val').textContent=this.value;regen()"></div>
         </div>
         <div class="gen-out" id="gen-out" style="margin-top:12px">—</div>
         <div class="meterlabel"><span id="gen-bits" class="small"></span><span></span></div>
@@ -397,7 +397,7 @@
         <p class="d" data-i18n="ck_desc"></p>
         <div class="row">
           <div class="field">
-            <label class="l" data-i18n="ck_algo">Algorithm</label>
+            <label class="l" for="ck-algo" data-i18n="ck_algo">Algorithm</label>
             <select class="lvl" id="ck-algo" onchange="if(ckFile)computeChecksum()">
               <option value="SHA-256">SHA‑256</option>
               <option value="SHA-384">SHA‑384</option>
@@ -406,7 +406,7 @@
             </select>
           </div>
         </div>
-        <div class="drop" id="ck-drop" tabindex="0" style="padding:20px">
+        <div class="drop" id="ck-drop" tabindex="0" role="button" style="padding:20px">
           <div class="big" style="font-size:15px" data-i18n="ck_drop">Drop a file to compute its hash</div>
         </div>
         <input type="file" id="ck-input" hidden>
@@ -432,7 +432,7 @@
   </footer>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <div class="modal-bg" id="aboutModal">
   <div class="modal">
@@ -919,10 +919,15 @@ function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg
 
 /* ---------- 3. Core crypto ---------- */
 async function deriveKey(pass, salt, iterations){
-  const base = await subtle.importKey('raw', te.encode(pass), 'PBKDF2', false, ['deriveKey']);
+  const pwBytes = te.encode(pass);
+  let base;
+  try{ base = await subtle.importKey('raw', pwBytes, 'PBKDF2', false, ['deriveKey']); }
+  finally{ pwBytes.fill(0); } /* best-effort: do not leave the UTF-8 passphrase bytes in memory */
   return subtle.deriveKey({ name:'PBKDF2', salt, iterations, hash:'SHA-256' }, base, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']);
 }
 function buildPayloadV2(items){
+  if(items.length>0xFFFF) throw new Error('Too many files in one container (max 65535).');
+  for(const it of items){ if(te.encode(it.name).length>0xFFFF || it.bytes.length>0xFFFFFFFF) throw new Error('File or name too large for the container format.'); }
   let total=2; for(const it of items){ const nb=te.encode(it.name); total+=2+nb.length+4+it.bytes.length; }
   const pl=new Uint8Array(total); let o=0;
   pl[0]=(items.length>>8)&255; pl[1]=items.length&255; o=2;
@@ -996,15 +1001,16 @@ function crc32(buf){ let c=~0; for(let i=0;i<buf.length;i++){ c^=buf[i]; for(let
 function catU8(arrs){ let n=0; for(const a of arrs)n+=a.length; const o=new Uint8Array(n); let p=0; for(const a of arrs){o.set(a,p);p+=a.length;} return o; }
 function _u16(n){ return new Uint8Array([n&255,(n>>8)&255]); }
 function _u32(n){ return new Uint8Array([n&255,(n>>8)&255,(n>>16)&255,(n>>>24)&255]); }
+function zipSafeName(n){ n=String(n).replace(/\\/g,'/').split('/').filter(s=>s&&s!=='.'&&s!=='..').join('/'); return n||'file'; } /* anti zip-slip */
 function makeZip(files){
   const DOSTIME=_u16(0), DOSDATE=_u16(((2021-1980)<<9)|(1<<5)|1);
   const chunks=[], central=[]; let offset=0;
   const push=u=>{ chunks.push(u); offset+=u.length; };
   for(const f of files){
-    const nameB=te.encode(f.name); const crc=crc32(f.bytes); const size=f.bytes.length; const lo=offset;
-    push(catU8([_u32(0x04034b50),_u16(20),_u16(0),_u16(0),DOSTIME,DOSDATE,_u32(crc),_u32(size),_u32(size),_u16(nameB.length),_u16(0),nameB]));
+    const nameB=te.encode(zipSafeName(f.name)); const crc=crc32(f.bytes); const size=f.bytes.length; const lo=offset;
+    push(catU8([_u32(0x04034b50),_u16(20),_u16(0x0800),_u16(0),DOSTIME,DOSDATE,_u32(crc),_u32(size),_u32(size),_u16(nameB.length),_u16(0),nameB]));
     push(f.bytes);
-    central.push(catU8([_u32(0x02014b50),_u16(20),_u16(20),_u16(0),_u16(0),DOSTIME,DOSDATE,_u32(crc),_u32(size),_u32(size),_u16(nameB.length),_u16(0),_u16(0),_u16(0),_u16(0),_u32(0),_u32(lo),nameB]));
+    central.push(catU8([_u32(0x02014b50),_u16(20),_u16(20),_u16(0x0800),_u16(0),DOSTIME,DOSDATE,_u32(crc),_u32(size),_u32(size),_u16(nameB.length),_u16(0),_u16(0),_u16(0),_u16(0),_u32(0),_u32(lo),nameB]));
   }
   const cdStart=offset; let cdSize=0; for(const c of central){ push(c); cdSize+=c.length; }
   push(catU8([_u32(0x06054b50),_u16(0),_u16(0),_u16(files.length),_u16(files.length),_u32(cdSize),_u32(cdStart),_u16(0)]));

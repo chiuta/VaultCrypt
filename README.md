@@ -1,5 +1,10 @@
 # VaultCrypt
 
+**Live / demo:** https://chiuta.github.io/VaultCrypt/
+
+![VaultCrypt — captură de ecran / screenshot](screenshot.png)
+
+
 Criptare/decriptare de fișiere și text în browser, într-un singur `index.html` (6 limbi), plus generator de parole și sume de control.
 
 ## Cum funcționează (din cod)

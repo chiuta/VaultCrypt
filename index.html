@@ -28,7 +28,7 @@
 /* Accesibilitate: inel de focus vizibil pentru navigare la tastatură. */
 :focus-visible{outline:2px solid #4a90d9;outline-offset:2px;border-radius:2px}
 </style>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; script-src 'self' 'unsafe-inline' blob:; connect-src 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; script-src 'self' 'sha256-bAzItIH+hZUBiC9W8b8lozTFfsLe7TisaxQzfaZPLOc=' blob:; connect-src 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VaultCrypt — in-browser encryption</title>
 <meta name="description" content="Encrypt and decrypt any file or text with AES-256 directly in your browser. No server, no account, no telemetry. One HTML file, fully offline. Not independently security-audited.">
@@ -252,7 +252,7 @@
     </div>
     <div class="head-right">
       <div class="head-controls">
-        <select class="langsel" id="langsel" onchange="setLang(this.value)" aria-label="language">
+        <select class="langsel" id="langsel" aria-label="language">
           <option value="ro">Română</option>
           <option value="en">English</option>
           <option value="fr">Français</option>
@@ -267,16 +267,17 @@
   </header>
 
   <nav class="tabs">
-    <button class="tab on" data-tab="seal" onclick="showTab('seal')"><span class="ic">🔒</span><span data-i18n="t_seal">Seal</span></button>
-    <button class="tab" data-tab="unseal" onclick="showTab('unseal')"><span class="ic">🔓</span><span data-i18n="t_unseal">Unseal</span></button>
-    <button class="tab" data-tab="tools" onclick="showTab('tools')"><span class="ic">⚒</span><span data-i18n="t_tools">Tools</span></button>
+    <button class="tab on" data-tab="seal" data-act="showTab" data-arg="seal"><span class="ic">🔒</span><span data-i18n="t_seal">Seal</span></button>
+    <button class="tab" data-tab="unseal" data-act="showTab" data-arg="unseal"><span class="ic">🔓</span><span data-i18n="t_unseal">Unseal</span></button>
+    <button class="tab" data-tab="tools" data-act="showTab" data-arg="tools"><span class="ic">⚒</span><span data-i18n="t_tools">Tools</span></button>
   </nav>
 
+  <main id="main">
   <section class="view on" id="view-seal">
     <div class="panel">
       <div class="seg" id="seal-src">
-        <button class="on" data-src="file" onclick="setSealSrc('file')" data-i18n="src_file">File</button>
-        <button data-src="text" onclick="setSealSrc('text')" data-i18n="src_text">Text</button>
+        <button class="on" data-src="file" data-act="setSealSrc" data-arg="file" data-i18n="src_file">File</button>
+        <button data-src="text" data-act="setSealSrc" data-arg="text" data-i18n="src_text">Text</button>
       </div>
       <div id="seal-file-wrap">
         <div class="drop" id="seal-drop" tabindex="0" role="button">
@@ -295,7 +296,7 @@
         <label class="l" for="seal-pass" data-i18n="lbl_pass">Passphrase</label>
         <div class="pwrow">
           <input type="password" id="seal-pass" autocomplete="new-password" spellcheck="false">
-          <button class="eye" onclick="togglePw('seal-pass',this)" aria-label="show">👁</button>
+          <button class="eye" data-act="togglePw" data-arg="seal-pass" aria-label="show">👁</button>
         </div>
         <div class="meter"><i id="seal-meter"></i></div>
         <div class="meterlabel"><span id="seal-meter-label" data-i18n="ms_empty"></span><span id="seal-meter-bits"></span></div>
@@ -315,13 +316,13 @@
           </select>
         </div>
         <div class="field" style="display:flex;align-items:flex-end">
-          <button class="btn ghost full" onclick="showTab('tools')" data-i18n="need_pass">Need a strong passphrase?</button>
+          <button class="btn ghost full" data-act="showTab" data-arg="tools" data-i18n="need_pass">Need a strong passphrase?</button>
         </div>
       </div>
       <div class="opts">
         <label><input type="checkbox" id="seal-wipe"> <span data-i18n="wipe_label">Wipe passphrase after use</span></label>
       </div>
-      <button class="btn seal full" id="seal-go" onclick="doSeal()"><span>🔒</span><span data-i18n="btn_seal">Seal</span></button>
+      <button class="btn seal full" id="seal-go" data-act="doSeal"><span>🔒</span><span data-i18n="btn_seal">Seal</span></button>
       <div class="out" id="seal-out"></div>
     </div>
     <details class="spec"><summary data-i18n="how_title">How it works &amp; format</summary><div class="body" id="spec-body"></div></details>
@@ -330,8 +331,8 @@
   <section class="view" id="view-unseal">
     <div class="panel">
       <div class="seg" id="unseal-src">
-        <button class="on" data-src="file" onclick="setUnsealSrc('file')" data-i18n="usrc_file">.vault file</button>
-        <button data-src="text" onclick="setUnsealSrc('text')" data-i18n="usrc_text">Armored message</button>
+        <button class="on" data-src="file" data-act="setUnsealSrc" data-arg="file" data-i18n="usrc_file">.vault file</button>
+        <button data-src="text" data-act="setUnsealSrc" data-arg="text" data-i18n="usrc_text">Armored message</button>
       </div>
       <div id="unseal-file-wrap">
         <div class="drop" id="unseal-drop" tabindex="0" role="button">
@@ -350,13 +351,13 @@
         <label class="l" for="unseal-pass" data-i18n="lbl_pass">Passphrase</label>
         <div class="pwrow">
           <input type="password" id="unseal-pass" autocomplete="off" spellcheck="false">
-          <button class="eye" onclick="togglePw('unseal-pass',this)" aria-label="show">👁</button>
+          <button class="eye" data-act="togglePw" data-arg="unseal-pass" aria-label="show">👁</button>
         </div>
       </div>
       <div class="opts">
         <label><input type="checkbox" id="unseal-wipe"> <span data-i18n="wipe_label">Wipe passphrase after use</span></label>
       </div>
-      <button class="btn full" id="unseal-go" onclick="doUnseal()"><span>🔓</span><span data-i18n="btn_unseal">Unseal</span></button>
+      <button class="btn full" id="unseal-go" data-act="doUnseal"><span>🔓</span><span data-i18n="btn_unseal">Unseal</span></button>
       <div class="out" id="unseal-out"></div>
     </div>
   </section>
@@ -367,29 +368,29 @@
         <h3 data-i18n="gen_title">Passphrase generator</h3>
         <p class="d" data-i18n="gen_desc"></p>
         <div class="seg" id="gen-mode">
-          <button class="on" data-m="rand" onclick="setGenMode('rand')" data-i18n="gen_rand">Characters</button>
-          <button data-m="words" onclick="setGenMode('words')" data-i18n="gen_words">Words</button>
+          <button class="on" data-m="rand" data-act="setGenMode" data-arg="rand" data-i18n="gen_rand">Characters</button>
+          <button data-m="words" data-act="setGenMode" data-arg="words" data-i18n="gen_words">Words</button>
         </div>
         <div id="gen-rand-opts">
           <label class="l"><span data-i18n="gen_len">Length</span>: <span id="gen-len-val" class="small">20</span></label>
-          <div class="rangewrap"><input type="range" id="gen-len" min="8" max="64" value="20" oninput="document.getElementById('gen-len-val').textContent=this.value;regen()"></div>
+          <div class="rangewrap"><input type="range" id="gen-len" min="8" max="64" value="20"></div>
           <div class="checks">
-            <label><input type="checkbox" id="g-lower" checked onchange="regen()"> a‑z</label>
-            <label><input type="checkbox" id="g-upper" checked onchange="regen()"> A‑Z</label>
-            <label><input type="checkbox" id="g-dig" checked onchange="regen()"> 0‑9</label>
-            <label><input type="checkbox" id="g-sym" checked onchange="regen()"> !@#$…</label>
+            <label><input type="checkbox" id="g-lower" checked> a‑z</label>
+            <label><input type="checkbox" id="g-upper" checked> A‑Z</label>
+            <label><input type="checkbox" id="g-dig" checked> 0‑9</label>
+            <label><input type="checkbox" id="g-sym" checked> !@#$…</label>
           </div>
         </div>
         <div id="gen-words-opts" style="display:none">
           <label class="l"><span data-i18n="gen_nwords">Word count</span>: <span id="gen-nw-val" class="small">10</span></label>
-          <div class="rangewrap"><input type="range" id="gen-nw" min="3" max="12" value="10" oninput="document.getElementById('gen-nw-val').textContent=this.value;regen()"></div>
+          <div class="rangewrap"><input type="range" id="gen-nw" min="3" max="12" value="10"></div>
         </div>
         <div class="gen-out" id="gen-out" style="margin-top:12px">—</div>
         <div class="meterlabel"><span id="gen-bits" class="small"></span><span></span></div>
         <div class="row" style="margin-top:12px">
-          <button class="btn ghost" onclick="regen()">↻ <span data-i18n="gen_new">Generate again</span></button>
-          <button class="btn ghost" onclick="copyText(document.getElementById('gen-out').textContent,this)" data-i18n="copy">Copy</button>
-          <button class="btn ghost" onclick="useGenerated()" data-i18n="gen_use">Use for sealing</button>
+          <button class="btn ghost" data-act="regen">↻ <span data-i18n="gen_new">Generate again</span></button>
+          <button class="btn ghost" data-act="copyGen" data-i18n="copy">Copy</button>
+          <button class="btn ghost" data-act="useGenerated" data-i18n="gen_use">Use for sealing</button>
         </div>
       </div>
       <div class="tools-block">
@@ -398,7 +399,7 @@
         <div class="row">
           <div class="field">
             <label class="l" for="ck-algo" data-i18n="ck_algo">Algorithm</label>
-            <select class="lvl" id="ck-algo" onchange="if(ckFile)computeChecksum()">
+            <select class="lvl" id="ck-algo">
               <option value="SHA-256">SHA‑256</option>
               <option value="SHA-384">SHA‑384</option>
               <option value="SHA-512">SHA‑512</option>
@@ -415,7 +416,7 @@
       <div class="tools-block">
         <h3 data-i18n="st_title">Cryptographic self‑test</h3>
         <p class="d" data-i18n="st_desc"></p>
-        <button class="btn ghost" onclick="selfTest()">▶ <span data-i18n="st_run">Run the test</span></button>
+        <button class="btn ghost" data-act="selfTest">▶ <span data-i18n="st_run">Run the test</span></button>
         <div id="st-out" style="margin-top:12px"></div>
       </div>
       <div class="tools-block">
@@ -425,10 +426,11 @@
       </div>
     </div>
   </section>
+  </main>
 
   <footer>
     <div data-i18n="foot_left"></div>
-    <div><a href="https://chiuta.github.io" target="_blank" rel="noopener">chiuta.github.io</a> · <span class="v">VaultCrypt v2.0</span></div>
+    <div><a href="https://chiuta.github.io" target="_blank" rel="noopener">chiuta.github.io</a> · <span class="v">VaultCrypt v2.0.1</span></div>
     <div><small>Not independently security-audited. Lost passphrase = unrecoverable data (no recovery); keep backups. · Neauditat independent; parolă pierdută = date pierdute, fără recuperare; păstrează copii de siguranță.</small></div>
   </footer>
 </div>
@@ -528,7 +530,7 @@ const I18N = {
     dl_orig:'Descarcă fișierul original', dl_txt:'Descarcă ca .txt',
     err_unseal:'Desigilare eșuată: parolă greșită sau container alterat/corupt.',
     err_badcontainer:'Acesta nu pare un container VaultCrypt valid.',
-    err_armor:'Nu am găsit un bloc armurat valid în text.',
+    err_armor:'Nu am găsit un bloc armurat valid în text.', err_armor_bad:'Blocul armurat este deteriorat sau incomplet (integritate compromisă): conținutul nu mai este un base64 valid.',
     copied:'Copiat în clipboard ✓', copyfail:'Nu am putut copia.', used_pass:'Parola a fost completată la sigilare ✓',
     st_pass:'TOATE testele au trecut ✓', st_fail:'Un test a eșuat ✗',
     st_l1:'round‑trip text (cu diacritice)', st_l2:'round‑trip fișier binar', st_l3:'round‑trip multi‑fișier',
@@ -596,7 +598,7 @@ const I18N = {
     dl_orig:'Download original file', dl_txt:'Download as .txt',
     err_unseal:'Unseal failed: wrong passphrase or tampered/corrupted container.',
     err_badcontainer:'This does not look like a valid VaultCrypt container.',
-    err_armor:'No valid armored block found in the text.',
+    err_armor:'No valid armored block found in the text.', err_armor_bad:'The armored block is damaged or incomplete (integrity compromised): its content is no longer valid base64.',
     copied:'Copied to clipboard ✓', copyfail:'Could not copy.', used_pass:'Passphrase filled into the seal form ✓',
     st_pass:'ALL tests passed ✓', st_fail:'A test failed ✗',
     st_l1:'text round‑trip (with diacritics)', st_l2:'binary file round‑trip', st_l3:'multi‑file round‑trip',
@@ -664,7 +666,7 @@ const I18N = {
     dl_orig:'Télécharger le fichier original', dl_txt:'Télécharger en .txt',
     err_unseal:'Échec du descellement : phrase erronée ou conteneur altéré/corrompu.',
     err_badcontainer:'Ceci ne semble pas être un conteneur VaultCrypt valide.',
-    err_armor:'Aucun bloc blindé valide trouvé dans le texte.',
+    err_armor:'Aucun bloc blindé valide trouvé dans le texte.', err_armor_bad:'Le bloc blindé est endommagé ou incomplet (intégrité compromise) : son contenu n’est plus du base64 valide.',
     copied:'Copié dans le presse‑papiers ✓', copyfail:'Copie impossible.', used_pass:'Phrase insérée dans le formulaire ✓',
     st_pass:'TOUS les tests réussis ✓', st_fail:'Un test a échoué ✗',
     st_l1:'aller‑retour texte (avec diacritiques)', st_l2:'aller‑retour fichier binaire', st_l3:'aller‑retour multi‑fichiers',
@@ -732,7 +734,7 @@ const I18N = {
     dl_orig:'Scarica il file originale', dl_txt:'Scarica come .txt',
     err_unseal:'Apertura fallita: passphrase errata o contenitore manomesso/corrotto.',
     err_badcontainer:'Questo non sembra un contenitore VaultCrypt valido.',
-    err_armor:'Nessun blocco blindato valido trovato nel testo.',
+    err_armor:'Nessun blocco blindato valido trovato nel testo.', err_armor_bad:'Il blocco blindato è danneggiato o incompleto (integrità compromessa): il contenuto non è più base64 valido.',
     copied:'Copiato negli appunti ✓', copyfail:'Copia non riuscita.', used_pass:'Passphrase inserita nel modulo ✓',
     st_pass:'TUTTI i test superati ✓', st_fail:'Un test è fallito ✗',
     st_l1:'andata‑ritorno testo (con diacritici)', st_l2:'andata‑ritorno file binario', st_l3:'andata‑ritorno multi‑file',
@@ -800,7 +802,7 @@ const I18N = {
     dl_orig:'Descargar archivo original', dl_txt:'Descargar como .txt',
     err_unseal:'Fallo al abrir: contraseña incorrecta o contenedor manipulado/corrupto.',
     err_badcontainer:'Esto no parece un contenedor VaultCrypt válido.',
-    err_armor:'No se encontró un bloque blindado válido en el texto.',
+    err_armor:'No se encontró un bloque blindado válido en el texto.', err_armor_bad:'El bloque blindado está dañado o incompleto (integridad comprometida): su contenido ya no es base64 válido.',
     copied:'Copiado al portapapeles ✓', copyfail:'No se pudo copiar.', used_pass:'Contraseña insertada en el formulario ✓',
     st_pass:'TODAS las pruebas superadas ✓', st_fail:'Una prueba falló ✗',
     st_l1:'ida y vuelta de texto (con diacríticos)', st_l2:'ida y vuelta de archivo binario', st_l3:'ida y vuelta multi‑archivo',
@@ -868,7 +870,7 @@ const I18N = {
     dl_orig:'Descarregar ficheiro original', dl_txt:'Descarregar como .txt',
     err_unseal:'Falha ao abrir: palavra‑passe errada ou contentor adulterado/corrompido.',
     err_badcontainer:'Isto não parece um contentor VaultCrypt válido.',
-    err_armor:'Nenhum bloco blindado válido encontrado no texto.',
+    err_armor:'Nenhum bloco blindado válido encontrado no texto.', err_armor_bad:'O bloco blindado está danificado ou incompleto (integridade comprometida): o conteúdo já não é base64 válido.',
     copied:'Copiado para a área de transferência ✓', copyfail:'Não foi possível copiar.', used_pass:'Palavra‑passe inserida no formulário ✓',
     st_pass:'TODOS os testes passaram ✓', st_fail:'Um teste falhou ✗',
     st_l1:'ida e volta de texto (com diacríticos)', st_l2:'ida e volta de ficheiro binário', st_l3:'ida e volta multi‑ficheiro',
@@ -994,7 +996,8 @@ function dearmor(text){
   let b64 = (i!==-1 && j!==-1 && j>i) ? text.slice(i+ARMOR_BEGIN.length, j) : text;
   b64=b64.replace(/[^A-Za-z0-9+/=]/g,'');
   if(!b64){ const e=new Error('armor'); e.code='ARMOR'; throw e; }
-  return b64ToBytes(b64);
+  try{ return b64ToBytes(b64); }
+  catch(_){ const e=new Error('armor-damaged'); e.code='ARMORBAD'; throw e; } /* markers found but the body is not valid base64: damaged/truncated block */
 }
 
 /* ---------- 5. ZIP store + CRC32 ---------- */
@@ -1128,7 +1131,7 @@ async function doUnseal(){
       if(!txt.trim()){ out.innerHTML=status(T('err_notext'),'bad'); return; }
       container=dearmor(txt);
     }
-  }catch(e){ out.innerHTML=status(T('err_armor'),'bad'); return; }
+  }catch(e){ out.innerHTML=status(T(e&&e.code==='ARMORBAD'?'err_armor_bad':'err_armor'),'bad'); return; }
   if(!pass){ out.innerHTML=status(T('err_pass'),'bad'); return; }
   let okMagic=container.length>=39; for(let i=0;okMagic&&i<6;i++) if(container[i]!==MAGIC[i]) okMagic=false;
   if(!okMagic){ out.innerHTML=status(T('err_badcontainer'),'bad'); return; }
@@ -1355,6 +1358,36 @@ document.addEventListener('keydown',e=>{
     if(document.getElementById('view-seal').classList.contains('on')) doSeal();
     else if(document.getElementById('view-unseal').classList.contains('on')) doUnseal();
   }
+});
+
+
+/* Delegated UI events (no inline handlers: CSP no longer needs 'unsafe-inline' for scripts) */
+document.addEventListener('click',function(e){
+  const el=e.target.closest&&e.target.closest('[data-act]'); if(!el) return;
+  const g=el.dataset.arg;
+  switch(el.dataset.act){
+    case 'showTab': showTab(g); break;
+    case 'setSealSrc': setSealSrc(g); break;
+    case 'setUnsealSrc': setUnsealSrc(g); break;
+    case 'togglePw': togglePw(g,el); break;
+    case 'doSeal': doSeal(); break;
+    case 'doUnseal': doUnseal(); break;
+    case 'setGenMode': setGenMode(g); break;
+    case 'regen': regen(); break;
+    case 'copyGen': copyText(document.getElementById('gen-out').textContent,el); break;
+    case 'useGenerated': useGenerated(); break;
+    case 'selfTest': selfTest(); break;
+  }
+});
+document.addEventListener('input',function(e){
+  const t=e.target;
+  if(t.id==='gen-len'||t.id==='gen-nw'){ document.getElementById(t.id+'-val').textContent=t.value; regen(); }
+});
+document.addEventListener('change',function(e){
+  const t=e.target;
+  if(t.id==='langsel') setLang(t.value);
+  else if(t.id==='g-lower'||t.id==='g-upper'||t.id==='g-dig'||t.id==='g-sym') regen();
+  else if(t.id==='ck-algo'){ if(ckFile) computeChecksum(); }
 });
 
 // Restore persisted security level

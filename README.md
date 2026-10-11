@@ -1,6 +1,6 @@
 # VaultCrypt
 
-**Ultima actualizare:** 11 octombrie 2026 · versiune 2.0.1
+**Ultima actualizare:** 11 octombrie 2026 · versiune 2.0.2
 
 **Live / demo:** https://chiuta.github.io/VaultCrypt/
 
@@ -33,8 +33,11 @@ Audit: 2026-10-10
 
 ## Istoric / Changelog
 
+### 11 octombrie 2026 (v2.0.2)
+- Indicator live „parolele coincid / nu coincid încă” sub câmpul de confirmare (`role=status`) și avertisment Caps Lock la câmpurile de parolă, în cele 6 limbi; Ctrl/Cmd+Enter pentru acțiune exista deja. Testat offline cu CSP activ: 0 erori, axe 0.
+
 ### 11 octombrie 2026 (v2.0.1)
 - Un bloc armurat modificat/trunchiat (base64 invalid, dar cu markerii prezenți) afișează acum un mesaj de integritate separat („deteriorat sau incomplet”), în cele 6 limbi, în loc de „bloc armurat valid negăsit”; o modificare care păstrează base64 valid continuă să dea „parolă greșită sau container alterat”.
 - CSP: eliminat `'unsafe-inline'` din `script-src` (hash SHA-256 pentru scriptul unic); cele 26 de handlere inline sunt înlocuite cu delegare de evenimente; testat cu CSP activ.
 - Conținutul este încadrat în `<main>` (axe: 0 încălcări); nivelul implicit „High” documentat explicit (memorarea ultimului nivel explică un eventual „Balanced” la redeschidere).
-- Versiune v2.0.1 în subsol.
+- Versiune v2.0.2 în subsol.

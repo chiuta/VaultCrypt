@@ -28,7 +28,7 @@
 /* Accesibilitate: inel de focus vizibil pentru navigare la tastatură. */
 :focus-visible{outline:2px solid #4a90d9;outline-offset:2px;border-radius:2px}
 </style>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; script-src 'self' 'sha256-bAzItIH+hZUBiC9W8b8lozTFfsLe7TisaxQzfaZPLOc=' blob:; connect-src 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; script-src 'self' blob: 'sha256-eGpzPdt/IDTeL0QSxo49eOLCQ7+JfEF3n6me45+aW2o='; connect-src 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VaultCrypt — in-browser encryption</title>
 <meta name="description" content="Encrypt and decrypt any file or text with AES-256 directly in your browser. No server, no account, no telemetry. One HTML file, fully offline. Not independently security-audited.">
@@ -304,8 +304,9 @@
       </div>
       <div class="field pwrow">
         <label class="l" for="seal-pass2" data-i18n="lbl_pass2">Confirm passphrase</label>
-        <input type="password" id="seal-pass2" autocomplete="new-password" spellcheck="false">
+        <input type="password" id="seal-pass2" autocomplete="new-password" spellcheck="false" aria-describedby="seal-match">
       </div>
+      <div class="crackline" id="seal-match" role="status" aria-live="polite"></div>
       <div class="row">
         <div class="field">
           <label class="l" for="seal-iter" data-i18n="lbl_sec">Security level (PBKDF2)</label>
@@ -430,7 +431,7 @@
 
   <footer>
     <div data-i18n="foot_left"></div>
-    <div><a href="https://chiuta.github.io" target="_blank" rel="noopener">chiuta.github.io</a> · <span class="v">VaultCrypt v2.0.1</span></div>
+    <div><a href="https://chiuta.github.io" target="_blank" rel="noopener">chiuta.github.io</a> · <span class="v">VaultCrypt v2.0.2</span></div>
     <div><small>Not independently security-audited. Lost passphrase = unrecoverable data (no recovery); keep backups. · Neauditat independent; parolă pierdută = date pierdute, fără recuperare; păstrează copii de siguranță.</small></div>
   </footer>
 </div>
@@ -516,7 +517,7 @@ const I18N = {
     ms_empty:'Introdu o parolă', ms_vweak:'Foarte slabă', ms_weak:'Slabă', ms_fair:'Acceptabilă', ms_good:'Bună', ms_strong:'Puternică', ms_excellent:'Excelentă',
     chip_remove:'Elimină',
     err_nofile:'Selectează mai întâi un fișier.', err_notext:'Scrie mai întâi un mesaj.',
-    err_pass:'Introdu o parolă.', err_passmatch:'Parolele nu coincid.', err_passshort:'Parola e prea scurtă (minim 4 caractere).',
+    err_pass:'Introdu o parolă.', pm_ok:'Parolele coincid.', pm_no:'Parolele nu coincid încă.', caps:'Caps Lock este activat.', err_passmatch:'Parolele nu coincid.', err_passshort:'Parola e prea scurtă (minim 4 caractere).',
     err_read:'Nu am putut citi fișierul.',
     sealing:'Se derivează cheia și se sigilează…', unsealing:'Se derivează cheia și se desigilează…',
     seal_ok_file:'Fișier sigilat. Containerul e gata de descărcare.',
@@ -584,7 +585,7 @@ const I18N = {
     ms_empty:'Enter a passphrase', ms_vweak:'Very weak', ms_weak:'Weak', ms_fair:'Fair', ms_good:'Good', ms_strong:'Strong', ms_excellent:'Excellent',
     chip_remove:'Remove',
     err_nofile:'Select a file first.', err_notext:'Type a message first.',
-    err_pass:'Enter a passphrase.', err_passmatch:'Passphrases do not match.', err_passshort:'Passphrase is too short (minimum 4 characters).',
+    err_pass:'Enter a passphrase.', pm_ok:'Passphrases match.', pm_no:'Passphrases do not match yet.', caps:'Caps Lock is on.', err_passmatch:'Passphrases do not match.', err_passshort:'Passphrase is too short (minimum 4 characters).',
     err_read:'Could not read the file.',
     sealing:'Deriving key and sealing…', unsealing:'Deriving key and unsealing…',
     seal_ok_file:'File sealed. The container is ready to download.',
@@ -652,7 +653,7 @@ const I18N = {
     ms_empty:'Saisissez une phrase', ms_vweak:'Très faible', ms_weak:'Faible', ms_fair:'Correcte', ms_good:'Bonne', ms_strong:'Forte', ms_excellent:'Excellente',
     chip_remove:'Retirer',
     err_nofile:'Sélectionnez d’abord un fichier.', err_notext:'Écrivez d’abord un message.',
-    err_pass:'Saisissez une phrase secrète.', err_passmatch:'Les phrases ne correspondent pas.', err_passshort:'Phrase trop courte (minimum 4 caractères).',
+    err_pass:'Saisissez une phrase secrète.', pm_ok:'Les phrases correspondent.', pm_no:'Les phrases ne correspondent pas encore.', caps:'Verr. Maj. est activé.', err_passmatch:'Les phrases ne correspondent pas.', err_passshort:'Phrase trop courte (minimum 4 caractères).',
     err_read:'Impossible de lire le fichier.',
     sealing:'Dérivation de la clé et scellement…', unsealing:'Dérivation de la clé et descellement…',
     seal_ok_file:'Fichier scellé. Le conteneur est prêt à télécharger.',
@@ -720,7 +721,7 @@ const I18N = {
     ms_empty:'Inserisci una passphrase', ms_vweak:'Molto debole', ms_weak:'Debole', ms_fair:'Discreta', ms_good:'Buona', ms_strong:'Forte', ms_excellent:'Eccellente',
     chip_remove:'Rimuovi',
     err_nofile:'Seleziona prima un file.', err_notext:'Scrivi prima un messaggio.',
-    err_pass:'Inserisci una passphrase.', err_passmatch:'Le passphrase non coincidono.', err_passshort:'Passphrase troppo corta (minimo 4 caratteri).',
+    err_pass:'Inserisci una passphrase.', pm_ok:'Le passphrase coincidono.', pm_no:'Le passphrase non coincidono ancora.', caps:'Bloc Maiusc è attivo.', err_passmatch:'Le passphrase non coincidono.', err_passshort:'Passphrase troppo corta (minimo 4 caratteri).',
     err_read:'Impossibile leggere il file.',
     sealing:'Derivazione della chiave e sigillatura…', unsealing:'Derivazione della chiave e apertura…',
     seal_ok_file:'File sigillato. Il contenitore è pronto per il download.',
@@ -788,7 +789,7 @@ const I18N = {
     ms_empty:'Introduce una contraseña', ms_vweak:'Muy débil', ms_weak:'Débil', ms_fair:'Aceptable', ms_good:'Buena', ms_strong:'Fuerte', ms_excellent:'Excelente',
     chip_remove:'Quitar',
     err_nofile:'Selecciona primero un archivo.', err_notext:'Escribe primero un mensaje.',
-    err_pass:'Introduce una contraseña.', err_passmatch:'Las contraseñas no coinciden.', err_passshort:'Contraseña demasiado corta (mínimo 4 caracteres).',
+    err_pass:'Introduce una contraseña.', pm_ok:'Las contraseñas coinciden.', pm_no:'Las contraseñas aún no coinciden.', caps:'Bloq Mayús está activado.', err_passmatch:'Las contraseñas no coinciden.', err_passshort:'Contraseña demasiado corta (mínimo 4 caracteres).',
     err_read:'No se pudo leer el archivo.',
     sealing:'Derivando la clave y sellando…', unsealing:'Derivando la clave y abriendo…',
     seal_ok_file:'Archivo sellado. El contenedor está listo para descargar.',
@@ -856,7 +857,7 @@ const I18N = {
     ms_empty:'Introduza uma palavra‑passe', ms_vweak:'Muito fraca', ms_weak:'Fraca', ms_fair:'Aceitável', ms_good:'Boa', ms_strong:'Forte', ms_excellent:'Excelente',
     chip_remove:'Remover',
     err_nofile:'Selecione primeiro um ficheiro.', err_notext:'Escreva primeiro uma mensagem.',
-    err_pass:'Introduza uma palavra‑passe.', err_passmatch:'As palavras‑passe não coincidem.', err_passshort:'Palavra‑passe demasiado curta (mínimo 4 caracteres).',
+    err_pass:'Introduza uma palavra‑passe.', pm_ok:'As palavras‑passe coincidem.', pm_no:'As palavras‑passe ainda não coincidem.', caps:'Caps Lock está ativado.', err_passmatch:'As palavras‑passe não coincidem.', err_passshort:'Palavra‑passe demasiado curta (mínimo 4 caracteres).',
     err_read:'Não foi possível ler o ficheiro.',
     sealing:'A derivar a chave e a selar…', unsealing:'A derivar a chave e a abrir…',
     seal_ok_file:'Ficheiro selado. O contentor está pronto para download.',
@@ -904,7 +905,7 @@ function applyI18N(){
   updateMeter(document.getElementById('seal-pass').value);
   renderAudit(); regen();
 }
-function setLang(l){ if(!I18N[l]) return; LANG=l; try{localStorage.setItem(LANG_KEY,l);}catch(e){} applyI18N(); }
+function setLang(l){ if(!I18N[l]) return; LANG=l; try{localStorage.setItem(LANG_KEY,l);}catch(e){} applyI18N(); if(typeof updateMatch==='function') updateMatch(); }
 
 /* ---------- 2. Helpers ---------- */
 const subtle = window.crypto.subtle;
@@ -1267,7 +1268,7 @@ function regen(){
 function useGenerated(){
   const pw=document.getElementById('gen-out').textContent;
   if(!pw||pw==='—') return;
-  document.getElementById('seal-pass').value=pw; document.getElementById('seal-pass2').value=pw; updateMeter(pw);
+  document.getElementById('seal-pass').value=pw; document.getElementById('seal-pass2').value=pw; updateMeter(pw); updateMatch();
   showTab('seal'); setSealSrc(sealMode); toast(T('used_pass'));
 }
 
@@ -1381,6 +1382,7 @@ document.addEventListener('click',function(e){
 });
 document.addEventListener('input',function(e){
   const t=e.target;
+  if(t.id==='seal-pass'||t.id==='seal-pass2') updateMatch();
   if(t.id==='gen-len'||t.id==='gen-nw'){ document.getElementById(t.id+'-val').textContent=t.value; regen(); }
 });
 document.addEventListener('change',function(e){
@@ -1393,6 +1395,18 @@ document.addEventListener('change',function(e){
 // Restore persisted security level
 try{ const s=localStorage.getItem(SEC_KEY); if(s){ const sel=document.getElementById('seal-iter'); if([...sel.options].some(o=>o.value===s)) sel.value=s; } }catch(e){}
 
+function updateMatch(){
+  const a=document.getElementById('seal-pass').value,b=document.getElementById('seal-pass2').value,o=document.getElementById('seal-match');
+  o.textContent = (!b) ? '' : (a===b ? '\u2713 '+T('pm_ok') : '\u2717 '+T('pm_no'));
+}
+document.addEventListener('keydown',function(e){ const t=e.target; if(t&&t.type==='password'&&e.getModifierState) setCaps(t,e.getModifierState('CapsLock')); });
+document.addEventListener('keyup',function(e){ const t=e.target; if(t&&t.type==='password'&&e.getModifierState) setCaps(t,e.getModifierState('CapsLock')); });
+function setCaps(t,on){
+  let w=document.getElementById('capswarn');
+  if(!w){ w=document.createElement('div'); w.id='capswarn'; w.className='crackline'; w.setAttribute('role','status'); w.style.color='var(--warn,#e0a040)'; }
+  if(on){ w.textContent='\u26A0 '+T('caps'); const host=t.closest('.field')||t.parentNode; host.insertAdjacentElement('afterend',w); } else if(w.parentNode) w.parentNode.removeChild(w);
+}
+document.addEventListener('focusout',function(e){ const w=document.getElementById('capswarn'); if(w&&w.parentNode) w.parentNode.removeChild(w); });
 applyI18N();
 renderAudit();
 

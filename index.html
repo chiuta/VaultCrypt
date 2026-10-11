@@ -28,7 +28,7 @@
 /* Accesibilitate: inel de focus vizibil pentru navigare la tastatură. */
 :focus-visible{outline:2px solid #4a90d9;outline-offset:2px;border-radius:2px}
 </style>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; script-src 'self' blob: 'sha256-eGpzPdt/IDTeL0QSxo49eOLCQ7+JfEF3n6me45+aW2o='; connect-src 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; script-src 'self' blob: 'sha256-GW3B7IpJKNNiwZt2zi+Nr/LMrxIywXIQphiQ++ZkSFk='; connect-src 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VaultCrypt — in-browser encryption</title>
 <meta name="description" content="Encrypt and decrypt any file or text with AES-256 directly in your browser. No server, no account, no telemetry. One HTML file, fully offline. Not independently security-audited.">
@@ -431,7 +431,7 @@
 
   <footer>
     <div data-i18n="foot_left"></div>
-    <div><a href="https://chiuta.github.io" target="_blank" rel="noopener">chiuta.github.io</a> · <span class="v">VaultCrypt v2.0.2</span></div>
+    <div><a href="https://chiuta.github.io" target="_blank" rel="noopener">chiuta.github.io</a> · <span class="v">VaultCrypt v2.0.3</span></div>
     <div><small>Not independently security-audited. Lost passphrase = unrecoverable data (no recovery); keep backups. · Neauditat independent; parolă pierdută = date pierdute, fără recuperare; păstrează copii de siguranță.</small></div>
   </footer>
 </div>
@@ -893,7 +893,15 @@ const I18N = {
       <p><b>Importante:</b> não há recuperação da palavra‑passe. Palavra‑passe perdida = dados irrecuperáveis.</p>`
   }
 };
+const BIG_WARN=150*1048576, BIG_MAX=400*1048576; /* testat: 120 MB ok; ~860 MB blochează fila la descărcare */
+Object.assign(I18N.en,{"big_note": "Large input: it is held in memory several times over, so this may take a while.", "err_toobig": "Too large for in-browser encryption ({size}; limit {max}). The data is held in memory several times over, so bigger inputs crash the tab. Split the file or use a desktop tool.", "err_mem": "Not enough memory to finish. Try smaller files or close other tabs."});
+Object.assign(I18N.ro,{"big_note": "Date mari: sunt ținute în memorie de mai multe ori, deci poate dura.", "err_toobig": "Prea mare pentru criptarea în browser ({size}; limită {max}). Datele sunt ținute în memorie de mai multe ori, iar intrările mai mari blochează fila. Împarte fișierul sau folosește o unealtă desktop.", "err_mem": "Memorie insuficientă pentru a termina. Încearcă fișiere mai mici sau închide alte file."});
+Object.assign(I18N.fr,{"big_note": "Données volumineuses : elles sont conservées plusieurs fois en mémoire, cela peut donc prendre du temps.", "err_toobig": "Trop volumineux pour un chiffrement dans le navigateur ({size} ; limite {max}). Les données sont conservées plusieurs fois en mémoire, et des entrées plus grandes font planter l’onglet. Divisez le fichier ou utilisez un outil de bureau.", "err_mem": "Mémoire insuffisante pour terminer. Essayez des fichiers plus petits ou fermez d’autres onglets."});
+Object.assign(I18N.it,{"big_note": "Dati voluminosi: vengono tenuti in memoria più volte, quindi può richiedere tempo.", "err_toobig": "Troppo grande per la cifratura nel browser ({size}; limite {max}). I dati restano in memoria più volte e input più grandi mandano in crash la scheda. Dividi il file o usa uno strumento desktop.", "err_mem": "Memoria insufficiente per completare. Prova file più piccoli o chiudi altre schede."});
+Object.assign(I18N.es,{"big_note": "Datos grandes: se mantienen en memoria varias veces, por lo que puede tardar.", "err_toobig": "Demasiado grande para cifrar en el navegador ({size}; límite {max}). Los datos se mantienen en memoria varias veces y entradas mayores bloquean la pestaña. Divide el archivo o usa una herramienta de escritorio.", "err_mem": "Memoria insuficiente para terminar. Prueba con archivos más pequeños o cierra otras pestañas."});
+Object.assign(I18N.pt,{"big_note": "Dados grandes: ficam em memória várias vezes, por isso pode demorar.", "err_toobig": "Demasiado grande para cifrar no navegador ({size}; limite {max}). Os dados ficam em memória várias vezes e entradas maiores fazem o separador falhar. Divida o ficheiro ou use uma ferramenta de ambiente de trabalho.", "err_mem": "Memória insuficiente para terminar. Tente ficheiros mais pequenos ou feche outros separadores."});
 const LANG_KEY='vaultcrypt.lang', SEC_KEY='vaultcrypt.sec';
+function isMemErr(e){ return !!e && (e instanceof RangeError || /memory|allocation|buffer|quota/i.test(String(e.message||e.name||''))); }
 let LANG = (function(){ try{ return localStorage.getItem(LANG_KEY)||'en'; }catch(e){ return 'en'; } })();
 if(!I18N[LANG]) LANG='en';
 function T(k){ return (I18N[LANG] && I18N[LANG][k]!==undefined) ? I18N[LANG][k] : (I18N.en[k]!==undefined?I18N.en[k]:k); }
@@ -1092,10 +1100,12 @@ async function doSeal(){
   if(!pass){ out.innerHTML=status(T('err_pass'),'bad'); return; }
   if(pass.length<4){ out.innerHTML=status(T('err_passshort'),'bad'); return; }
   if(pass!==pass2){ out.innerHTML=status(T('err_passmatch'),'bad'); return; }
+  let totalIn=0; for(const it of items) totalIn+=it.bytes.length;
+  if(totalIn>BIG_MAX){ out.innerHTML=status(T('err_toobig').replace('{size}',fmtSize(totalIn)).replace('{max}',fmtSize(BIG_MAX)),'bad'); return; }
   const iter=parseInt(document.getElementById('seal-iter').value,10);
   try{ localStorage.setItem(SEC_KEY,String(iter)); }catch(e){}
   const btn=document.getElementById('seal-go'); btn.disabled=true;
-  out.innerHTML=status('⏳ '+T('sealing'),'info');
+  out.innerHTML=status('⏳ '+T('sealing')+(totalIn>BIG_WARN?' — '+T('big_note'):''),'info');
   await new Promise(r=>setTimeout(r,30));
   try{
     const container=await seal(items, pass, iter);
@@ -1113,7 +1123,7 @@ async function doSeal(){
       a.onclick=()=>copyText(armored,a); out.appendChild(a);
     }
     wipeIf('seal');
-  }catch(err){ out.innerHTML=status('✗ '+escapeHtml(err.message||'error'),'bad'); }
+  }catch(err){ out.innerHTML=status('✗ '+(isMemErr(err)?T('err_mem'):escapeHtml(err.message||'error')),'bad'); }
   finally{ btn.disabled=false; }
 }
 
@@ -1136,8 +1146,9 @@ async function doUnseal(){
   if(!pass){ out.innerHTML=status(T('err_pass'),'bad'); return; }
   let okMagic=container.length>=39; for(let i=0;okMagic&&i<6;i++) if(container[i]!==MAGIC[i]) okMagic=false;
   if(!okMagic){ out.innerHTML=status(T('err_badcontainer'),'bad'); return; }
+  if(container.length>BIG_MAX+1048576){ out.innerHTML=status(T('err_toobig').replace('{size}',fmtSize(container.length)).replace('{max}',fmtSize(BIG_MAX)),'bad'); return; }
   const btn=document.getElementById('unseal-go'); btn.disabled=true;
-  out.innerHTML=status('⏳ '+T('unsealing'),'info');
+  out.innerHTML=status('⏳ '+T('unsealing')+(container.length>BIG_WARN?' — '+T('big_note'):''),'info');
   await new Promise(r=>setTimeout(r,30));
   try{
     const res=await unseal(container, pass);
@@ -1171,7 +1182,7 @@ async function doUnseal(){
       out.appendChild(all);
     }
     wipeIf('unseal');
-  }catch(err){ out.innerHTML=status('✗ '+T('err_unseal'),'bad'); }
+  }catch(err){ out.innerHTML=status('✗ '+T(isMemErr(err)&&err.code!=='AUTH'?'err_mem':'err_unseal'),'bad'); }
   finally{ btn.disabled=false; }
 }
 function downloadBlob(blob, name){

@@ -1,6 +1,6 @@
 # VaultCrypt
 
-**Ultima actualizare:** 11 octombrie 2026 · versiune 2.0.2
+**Ultima actualizare:** 11 octombrie 2026 · versiune 2.0.3
 
 **Live / demo:** https://chiuta.github.io/VaultCrypt/
 
@@ -24,6 +24,8 @@ Criptare/decriptare de fișiere și text în browser, într-un singur `index.htm
 Nicio cerere de rețea: pagina are CSP cu `connect-src 'self'`, iar `fetch`/`XMLHttpRequest`/`sendBeacon` sunt blocate în cod (jurnal „Privacy audit” în pagină). Fără telemetrie, fără fonturi sau scripturi externe. Verificat la audit: 0 cereri externe la încărcare. Singurele legături externe sunt cele din subsol și fereastra „Despre” (se deschid doar la click).
 
 ## Limitări
+Fișierele sunt citite integral în memorie (de câteva ori, în timpul criptării): limită practică 400 MB per operație (testat: 380 MB ok, ≈860 MB blochează fila). Pentru fișiere mai mari folosește o unealtă desktop.
+
 CSP nu mai permite `'unsafe-inline'` pentru scripturi: scriptul unic din pagină este autorizat prin hash SHA-256 în meta CSP (după orice modificare a scriptului hash-ul trebuie recalculat), iar handlerele inline au fost înlocuite cu delegare de evenimente. Stilurile inline rămân permise. Fișierele mari sunt procesate integral în memorie.
 
 ## Licență
@@ -32,6 +34,10 @@ CC0 1.0 (domeniu public), conform antetului din `index.html`; vezi `LICENSE`.
 Audit: 2026-10-10
 
 ## Istoric / Changelog
+
+### 11 octombrie 2026 (v2.0.3)
+- Fișiere mari: testat pe bune (Chromium, offline) — 120 MB și 380 MB se sigilează și se desigilează identic (≈5 s fiecare la 310.000 iterații), dar la ≈860 MB fila se blochează la descărcare. De aceea, de la 150 MB apare o notă „date mari” în timpul operației, iar peste 400 MB aplicația refuză cu un mesaj clar (în loc să blocheze fila); erorile de memorie primesc mesaj propriu, în cele 6 limbi. Limita se aplică și la desigilare.
+- Versiune v2.0.3 în subsol.
 
 ### 11 octombrie 2026 (v2.0.2)
 - Indicator live „parolele coincid / nu coincid încă” sub câmpul de confirmare (`role=status`) și avertisment Caps Lock la câmpurile de parolă, în cele 6 limbi; Ctrl/Cmd+Enter pentru acțiune exista deja. Testat offline cu CSP activ: 0 erori, axe 0.

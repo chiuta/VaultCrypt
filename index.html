@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
+<meta name="application-version" content="2.0.4">
+<meta name="last-updated" content="2026-10-12">
 <!--
   ============================================================================
   VaultCrypt
@@ -28,7 +30,7 @@
 /* Accesibilitate: inel de focus vizibil pentru navigare la tastatură. */
 :focus-visible{outline:2px solid #4a90d9;outline-offset:2px;border-radius:2px}
 </style>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; script-src 'self' blob: 'sha256-GW3B7IpJKNNiwZt2zi+Nr/LMrxIywXIQphiQ++ZkSFk='; connect-src 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; script-src 'self' blob: 'sha256-yQmXxRdSR4zgdJO3wsLnw4dgXDOtn+p+pmng227cHUk='; connect-src 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VaultCrypt — in-browser encryption</title>
 <meta name="description" content="Encrypt and decrypt any file or text with AES-256 directly in your browser. No server, no account, no telemetry. One HTML file, fully offline. Not independently security-audited.">
@@ -431,7 +433,7 @@
 
   <footer>
     <div data-i18n="foot_left"></div>
-    <div><a href="https://chiuta.github.io" target="_blank" rel="noopener">chiuta.github.io</a> · <span class="v">VaultCrypt v2.0.3</span></div>
+    <div><a href="https://chiuta.github.io" target="_blank" rel="noopener">chiuta.github.io</a> · <span class="v">VaultCrypt · <span id="app-version"><span data-i18n="ver_lbl">Version</span>: v 2.0.4 · 2026-10-12</span></span></div>
     <div><small>Not independently security-audited. Lost passphrase = unrecoverable data (no recovery); keep backups. · Neauditat independent; parolă pierdută = date pierdute, fără recuperare; păstrează copii de siguranță.</small></div>
   </footer>
 </div>
@@ -514,6 +516,7 @@ const I18N = {
     au_desc:'Toate apelurile de rețea (<code>fetch</code> / <code>XHR</code>) sunt interceptate și blocate. Jurnalul live de mai jos dovedește că nimic nu pleacă de pe dispozitiv.',
     au_clean:'Nicio încercare de rețea. Curat. ✓', au_blocked:'BLOCAT',
     foot_left:'Un singur fișier HTML · zero dependențe · funcționează offline · niciun byte nu pleacă de pe dispozitiv.',
+    ver_lbl:'Versiune',
     ms_empty:'Introdu o parolă', ms_vweak:'Foarte slabă', ms_weak:'Slabă', ms_fair:'Acceptabilă', ms_good:'Bună', ms_strong:'Puternică', ms_excellent:'Excelentă',
     chip_remove:'Elimină',
     err_nofile:'Selectează mai întâi un fișier.', err_notext:'Scrie mai întâi un mesaj.',
@@ -582,6 +585,7 @@ const I18N = {
     au_desc:'Every network call (<code>fetch</code> / <code>XHR</code>) is intercepted and blocked. The live log below proves nothing leaves your device.',
     au_clean:'No network attempts. Clean. ✓', au_blocked:'BLOCKED',
     foot_left:'One HTML file · zero dependencies · works offline · no byte ever leaves your device.',
+    ver_lbl:'Version',
     ms_empty:'Enter a passphrase', ms_vweak:'Very weak', ms_weak:'Weak', ms_fair:'Fair', ms_good:'Good', ms_strong:'Strong', ms_excellent:'Excellent',
     chip_remove:'Remove',
     err_nofile:'Select a file first.', err_notext:'Type a message first.',
@@ -650,6 +654,7 @@ const I18N = {
     au_desc:'Tous les appels réseau (<code>fetch</code> / <code>XHR</code>) sont interceptés et bloqués. Le journal en direct prouve que rien ne quitte l’appareil.',
     au_clean:'Aucune tentative réseau. Propre. ✓', au_blocked:'BLOQUÉ',
     foot_left:'Un seul fichier HTML · zéro dépendance · fonctionne hors ligne · aucun octet ne quitte l’appareil.',
+    ver_lbl:'Version',
     ms_empty:'Saisissez une phrase', ms_vweak:'Très faible', ms_weak:'Faible', ms_fair:'Correcte', ms_good:'Bonne', ms_strong:'Forte', ms_excellent:'Excellente',
     chip_remove:'Retirer',
     err_nofile:'Sélectionnez d’abord un fichier.', err_notext:'Écrivez d’abord un message.',
@@ -718,6 +723,7 @@ const I18N = {
     au_desc:'Ogni chiamata di rete (<code>fetch</code> / <code>XHR</code>) viene intercettata e bloccata. Il registro live dimostra che nulla lascia il dispositivo.',
     au_clean:'Nessun tentativo di rete. Pulito. ✓', au_blocked:'BLOCCATO',
     foot_left:'Un solo file HTML · zero dipendenze · funziona offline · nessun byte lascia il dispositivo.',
+    ver_lbl:'Versione',
     ms_empty:'Inserisci una passphrase', ms_vweak:'Molto debole', ms_weak:'Debole', ms_fair:'Discreta', ms_good:'Buona', ms_strong:'Forte', ms_excellent:'Eccellente',
     chip_remove:'Rimuovi',
     err_nofile:'Seleziona prima un file.', err_notext:'Scrivi prima un messaggio.',
@@ -786,6 +792,7 @@ const I18N = {
     au_desc:'Toda llamada de red (<code>fetch</code> / <code>XHR</code>) se intercepta y bloquea. El registro en vivo demuestra que nada sale del dispositivo.',
     au_clean:'Sin intentos de red. Limpio. ✓', au_blocked:'BLOQUEADO',
     foot_left:'Un solo archivo HTML · cero dependencias · funciona sin conexión · ningún byte sale del dispositivo.',
+    ver_lbl:'Versión',
     ms_empty:'Introduce una contraseña', ms_vweak:'Muy débil', ms_weak:'Débil', ms_fair:'Aceptable', ms_good:'Buena', ms_strong:'Fuerte', ms_excellent:'Excelente',
     chip_remove:'Quitar',
     err_nofile:'Selecciona primero un archivo.', err_notext:'Escribe primero un mensaje.',
@@ -854,6 +861,7 @@ const I18N = {
     au_desc:'Todas as chamadas de rede (<code>fetch</code> / <code>XHR</code>) são intercetadas e bloqueadas. O registo ao vivo prova que nada sai do dispositivo.',
     au_clean:'Sem tentativas de rede. Limpo. ✓', au_blocked:'BLOQUEADO',
     foot_left:'Um único ficheiro HTML · zero dependências · funciona offline · nenhum byte sai do dispositivo.',
+    ver_lbl:'Versão',
     ms_empty:'Introduza uma palavra‑passe', ms_vweak:'Muito fraca', ms_weak:'Fraca', ms_fair:'Aceitável', ms_good:'Boa', ms_strong:'Forte', ms_excellent:'Excelente',
     chip_remove:'Remover',
     err_nofile:'Selecione primeiro um ficheiro.', err_notext:'Escreva primeiro uma mensagem.',

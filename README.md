@@ -1,6 +1,6 @@
 # VaultCrypt
 
-**Ultima actualizare:** 11 octombrie 2026 · versiune 2.0.3
+**Versiune:** 2.0.4 · **Ultima actualizare:** 12 octombrie 2026
 
 **Live / demo:** https://chiuta.github.io/VaultCrypt/
 
@@ -34,6 +34,9 @@ CC0 1.0 (domeniu public), conform antetului din `index.html`; vezi `LICENSE`.
 Audit: 2026-10-10
 
 ## Istoric / Changelog
+
+### 12 octombrie 2026 (v2.0.4)
+- 2.0.4 — 2026-10-12: versiunea și data ultimei actualizări sunt afișate în aplicație
 
 ### 11 octombrie 2026 (v2.0.3)
 - Fișiere mari: testat pe bune (Chromium, offline) — 120 MB și 380 MB se sigilează și se desigilează identic (≈5 s fiecare la 310.000 iterații), dar la ≈860 MB fila se blochează la descărcare. De aceea, de la 150 MB apare o notă „date mari” în timpul operației, iar peste 400 MB aplicația refuză cu un mesaj clar (în loc să blocheze fila); erorile de memorie primesc mesaj propriu, în cele 6 limbi. Limita se aplică și la desigilare.

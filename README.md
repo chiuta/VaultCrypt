@@ -1,6 +1,6 @@
 # VaultCrypt
 
-**Versiune:** 2.0.4 · **Ultima actualizare:** 12 octombrie 2026
+**Versiune:** 2.1.0 · **Ultima actualizare:** 14 octombrie 2026
 
 **Live / demo:** https://chiuta.github.io/VaultCrypt/
 
@@ -34,6 +34,9 @@ CC0 1.0 (domeniu public), conform antetului din `index.html`; vezi `LICENSE`.
 Audit: 2026-10-10
 
 ## Istoric / Changelog
+
+### 2.1.0 — 2026-10-14
+- Copie de rezervă și etichetare date (fff-kit).
 
 ### 12 octombrie 2026 (v2.0.4)
 - 2.0.4 — 2026-10-12: versiunea și data ultimei actualizări sunt afișate în aplicație

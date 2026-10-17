@@ -29,7 +29,7 @@ Fișierele sunt citite integral în memorie (de câteva ori, în timpul criptăr
 CSP nu mai permite `'unsafe-inline'` pentru scripturi: scriptul unic din pagină este autorizat prin hash SHA-256 în meta CSP (după orice modificare a scriptului hash-ul trebuie recalculat), iar handlerele inline au fost înlocuite cu delegare de evenimente. Stilurile inline rămân permise. Fișierele mari sunt procesate integral în memorie.
 
 ## Licență
-CC0 1.0 (domeniu public), conform antetului din `index.html`; vezi `LICENSE`.
+MIT, conform antetului din `index.html`; vezi `LICENSE`.
 
 Audit: 2026-10-10
 

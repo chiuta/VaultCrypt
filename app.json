@@ -12,9 +12,11 @@
     "localStorage",
     "Web Crypto"
   ],
-  "storageKeys": [],
-  "sizeBytes": 197757,
-  "sha256": "ed723312afda333215faa059a330a1e2448ca6f3f0050e9443b6717710c4ac75",
+  "storageKeys": [
+    "vaultcrypt.lang"
+  ],
+  "sizeBytes": 198410,
+  "sha256": "e969d0db889bcf29be64aeda678ff4bd9f2668e27272dc61f2aa28e644265a31",
   "csp": {
     "present": true,
     "directives": {
@@ -56,7 +58,7 @@
     ]
   },
   "kit": {
-    "version": "1.0.0",
+    "version": "1.1.1",
     "modules": [
       "core",
       "label",

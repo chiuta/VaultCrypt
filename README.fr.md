@@ -2,13 +2,15 @@
 
 [English](README.md) · [Română](README.ro.md) · **Français** · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Version :** 2.1.0 · **Dernière mise à jour :** 2026-10-14
+**Version :** 2.2.0 · **Dernière mise à jour :** 2026-10-19
+
+Langues de l'interface : **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
 **En ligne / démo :** https://chiuta.github.io/VaultCrypt/
 
 ![VaultCrypt — capture d'écran](screenshot.png)
 
-Chiffrement/déchiffrement de fichiers et de texte dans le navigateur, dans un seul `index.html` (6 langues), avec en plus un générateur de mots de passe et des sommes de contrôle.
+Chiffrement/déchiffrement de fichiers et de texte dans le navigateur, dans un seul `index.html` (8 langues), avec en plus un générateur de mots de passe et des sommes de contrôle.
 
 ## Fonctionnement (d'après le code)
 - Clé dérivée du mot de passe avec PBKDF2-HMAC-SHA-256 (310 000 / 600 000 / 1 000 000 d'itérations ; par défaut « High » = 600 000 ; le dernier niveau utilisé lors du scellement est mémorisé localement dans `localStorage`, clé `vaultcrypt.sec`), sel aléatoire de 16 octets.

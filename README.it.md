@@ -2,13 +2,15 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · **Italiano** · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versione:** 2.1.0 · **Ultimo aggiornamento:** 2026-10-14
+**Versione:** 2.2.0 · **Ultimo aggiornamento:** 2026-10-19
+
+Lingue dell'interfaccia: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
 **Online / demo:** https://chiuta.github.io/VaultCrypt/
 
 ![VaultCrypt — schermata](screenshot.png)
 
-Cifratura/decifratura di file e testo nel browser, in un unico `index.html` (6 lingue), più un generatore di password e checksum.
+Cifratura/decifratura di file e testo nel browser, in un unico `index.html` (8 lingue), più un generatore di password e checksum.
 
 ## Come funziona (dal codice)
 - Chiave derivata dalla password con PBKDF2-HMAC-SHA-256 (310.000 / 600.000 / 1.000.000 di iterazioni; predefinito «High» = 600.000; l'ultimo livello usato in fase di sigillatura viene memorizzato localmente in `localStorage`, chiave `vaultcrypt.sec`), salt casuale di 16 byte.

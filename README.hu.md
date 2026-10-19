@@ -2,13 +2,15 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · **Magyar**
 
-**Verzió:** 2.1.0 · **Utolsó frissítés:** 2026-10-14
+**Verzió:** 2.2.0 · **Utolsó frissítés:** 2026-10-19
+
+A felület nyelvei: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
 **Élő verzió / demó:** https://chiuta.github.io/VaultCrypt/
 
 ![VaultCrypt — képernyőkép](screenshot.png)
 
-Fájlok és szövegek titkosítása/visszafejtése a böngészőben, egyetlen `index.html` fájlban (6 nyelv), valamint jelszógenerátor és ellenőrző összegek.
+Fájlok és szövegek titkosítása/visszafejtése a böngészőben, egyetlen `index.html` fájlban (8 nyelv), valamint jelszógenerátor és ellenőrző összegek.
 
 ## Hogyan működik (a kód alapján)
 - A kulcsot a jelszóból PBKDF2-HMAC-SHA-256 származtatja (310 000 / 600 000 / 1 000 000 iteráció; alapértelmezés: „High” = 600 000; a lezáráskor utoljára használt szintet a program helyben, a `localStorage`-ban jegyzi meg, kulcs: `vaultcrypt.sec`), véletlenszerű 16 bájtos sóval.

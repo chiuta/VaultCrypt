@@ -2,13 +2,15 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · **Deutsch** · [Magyar](README.hu.md)
 
-**Version:** 2.1.0 · **Zuletzt aktualisiert:** 2026-10-14
+**Version:** 2.2.0 · **Zuletzt aktualisiert:** 2026-10-19
+
+Oberflächensprachen: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
 **Online / Demo:** https://chiuta.github.io/VaultCrypt/
 
 ![VaultCrypt — Screenshot](screenshot.png)
 
-Ver- und Entschlüsselung von Dateien und Text im Browser, in einer einzigen `index.html` (6 Sprachen), dazu ein Passwortgenerator und Prüfsummen.
+Ver- und Entschlüsselung von Dateien und Text im Browser, in einer einzigen `index.html` (8 Sprachen), dazu ein Passwortgenerator und Prüfsummen.
 
 ## So funktioniert es (laut Code)
 - Schlüsselableitung aus dem Passwort mit PBKDF2-HMAC-SHA-256 (310.000 / 600.000 / 1.000.000 Iterationen; Standard „High“ = 600.000; die beim Versiegeln zuletzt verwendete Stufe wird lokal in `localStorage` gespeichert, Schlüssel `vaultcrypt.sec`), zufälliger 16-Byte-Salt.

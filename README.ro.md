@@ -8,7 +8,7 @@ Limbile interfeței: **Română, English, Français, Italiano, Español, Portugu
 
 **Live / demo:** https://chiuta.github.io/VaultCrypt/
 
-![VaultCrypt — captură de ecran / screenshot](screenshot.png)
+![VaultCrypt — captură de ecran / screenshot](screenshot.ro.png)
 
 Criptare/decriptare de fișiere și text în browser, într-un singur `index.html` (8 limbi), plus generator de parole și sume de control.
 

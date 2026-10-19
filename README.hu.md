@@ -8,7 +8,7 @@ A felület nyelvei: **Română, English, Français, Italiano, Español, Portugu�
 
 **Élő verzió / demó:** https://chiuta.github.io/VaultCrypt/
 
-![VaultCrypt — képernyőkép](screenshot.png)
+![VaultCrypt — képernyőkép](screenshot.hu.png)
 
 Fájlok és szövegek titkosítása/visszafejtése a böngészőben, egyetlen `index.html` fájlban (8 nyelv), valamint jelszógenerátor és ellenőrző összegek.
 

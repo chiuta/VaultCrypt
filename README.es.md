@@ -8,7 +8,7 @@ Idiomas de la interfaz: **Română, English, Français, Italiano, Español, Port
 
 **En línea / demo:** https://chiuta.github.io/VaultCrypt/
 
-![VaultCrypt — captura de pantalla](screenshot.png)
+![VaultCrypt — captura de pantalla](screenshot.es.png)
 
 Cifrado/descifrado de archivos y texto en el navegador, en un único `index.html` (8 idiomas), más un generador de contraseñas y sumas de verificación.
 

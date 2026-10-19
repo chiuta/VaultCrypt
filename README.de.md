@@ -8,7 +8,7 @@ Oberflächensprachen: **Română, English, Français, Italiano, Español, Portug
 
 **Online / Demo:** https://chiuta.github.io/VaultCrypt/
 
-![VaultCrypt — Screenshot](screenshot.png)
+![VaultCrypt — Screenshot](screenshot.de.png)
 
 Ver- und Entschlüsselung von Dateien und Text im Browser, in einer einzigen `index.html` (8 Sprachen), dazu ein Passwortgenerator und Prüfsummen.
 

@@ -8,7 +8,7 @@ Interface languages: **Română, English, Français, Italiano, Español, Portugu
 
 **Live / demo:** https://chiuta.github.io/VaultCrypt/
 
-![VaultCrypt — screenshot](screenshot.png)
+![VaultCrypt — screenshot](screenshot.en.png)
 
 In-browser encryption/decryption of files and text, in a single `index.html` (8 languages), plus a password generator and checksums.
 

@@ -2,7 +2,7 @@
 
 [English](README.md) · **Română** · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versiune:** 2.2.2 · **Ultima actualizare:** 2026-10-22
+**Versiune:** 2.2.3 · **Ultima actualizare:** 2026-10-22
 
 Limbile interfeței: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -37,6 +37,9 @@ MIT, conform antetului din `index.html`; vezi `LICENSE`.
 Audit: 2026-10-10
 
 ## Istoric / Changelog
+
+### 2.2.3 — 2026-10-22
+- Securitate: parolele sub 12 caractere nu mai sunt acceptate în tăcere: aplicația afișează un avertisment (tradus în cele 8 limbi) și cere confirmarea explicită „Sigilează oricum”. Minimul absolut rămâne 4 caractere.
 
 ### 2.2.2 — 2026-10-22
 - eticheta de accesibilitate a selectorului de limbă și termenul „additional authenticated data” (AAD) din secțiunea Despre sunt acum traduse în toate limbile.

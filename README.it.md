@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · **Italiano** · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versione:** 2.2.2 · **Ultimo aggiornamento:** 2026-10-22
+**Versione:** 2.2.3 · **Ultimo aggiornamento:** 2026-10-22
 
 Lingue dell'interfaccia: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -37,6 +37,9 @@ MIT, secondo l'intestazione di `index.html`; vedi `LICENSE`.
 Audit: 2026-10-10
 
 ## Cronologia / Changelog
+
+### 2.2.3 — 2026-10-22
+- Sicurezza: le passphrase di meno di 12 caratteri non sono più accettate in silenzio: l'app mostra un avviso (tradotto nelle 8 lingue) e richiede la conferma esplicita «Sigilla comunque». Il minimo assoluto resta di 4 caratteri.
 
 ### 2.2.2 — 2026-10-22
 - l'etichetta di accessibilità del selettore di lingua e il termine «additional authenticated data» (AAD) della sezione Informazioni sono ora tradotti in tutte le lingue.

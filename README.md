@@ -2,7 +2,7 @@
 
 **English** · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Version:** 2.2.2 · **Last updated:** 2026-10-22
+**Version:** 2.2.3 · **Last updated:** 2026-10-22
 
 Interface languages: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -37,6 +37,9 @@ MIT, per the header of `index.html`; see `LICENSE`.
 Audit: 2026-10-10
 
 ## History / Changelog
+
+### 2.2.3 — 2026-10-22
+- Security: passphrases shorter than 12 characters are no longer accepted silently: the app shows a warning (translated into all 8 languages) and requires an explicit "Seal anyway" confirmation. The absolute minimum stays at 4 characters.
 
 ### 2.2.2 — 2026-10-22
 - the language selector's accessibility label and the "additional authenticated data" (AAD) term in the About section are now translated into all languages.

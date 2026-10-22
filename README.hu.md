@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · **Magyar**
 
-**Verzió:** 2.2.2 · **Utolsó frissítés:** 2026-10-22
+**Verzió:** 2.2.3 · **Utolsó frissítés:** 2026-10-22
 
 A felület nyelvei: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -37,6 +37,9 @@ MIT, az `index.html` fejléce szerint; lásd: `LICENSE`.
 Audit: 2026-10-10
 
 ## Előzmények / Changelog
+
+### 2.2.3 — 2026-10-22
+- Biztonság: a 12 karakternél rövidebb jelmondatokat a program már nem fogadja el szó nélkül: figyelmeztetést jelenít meg (mind a 8 nyelvre lefordítva), és kifejezett „Mégis lepecsételem” megerősítést kér. Az abszolút minimum továbbra is 4 karakter.
 
 ### 2.2.2 — 2026-10-22
 - a nyelvválasztó hozzáférhetőségi címkéje és az „additional authenticated data” (AAD) kifejezés a Névjegy részben mostantól minden nyelven le van fordítva.

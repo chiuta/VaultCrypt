@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · **Deutsch** · [Magyar](README.hu.md)
 
-**Version:** 2.2.2 · **Zuletzt aktualisiert:** 2026-10-22
+**Version:** 2.2.3 · **Zuletzt aktualisiert:** 2026-10-22
 
 Oberflächensprachen: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -37,6 +37,9 @@ MIT, gemäß dem Header von `index.html`; siehe `LICENSE`.
 Audit: 2026-10-10
 
 ## Verlauf / Changelog
+
+### 2.2.3 — 2026-10-22
+- Sicherheit: Passphrasen mit weniger als 12 Zeichen werden nicht mehr stillschweigend akzeptiert: Die App zeigt eine Warnung (in alle 8 Sprachen übersetzt) und verlangt die ausdrückliche Bestätigung „Trotzdem versiegeln“. Das absolute Minimum bleibt bei 4 Zeichen.
 
 ### 2.2.2 — 2026-10-22
 - das Barrierefreiheits-Label der Sprachauswahl und der Begriff „additional authenticated data“ (AAD) im Abschnitt „Über“ sind jetzt in alle Sprachen übersetzt.

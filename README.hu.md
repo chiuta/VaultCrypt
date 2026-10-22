@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · **Magyar**
 
-**Verzió:** 2.2.0 · **Utolsó frissítés:** 2026-10-19
+**Verzió:** 2.2.1 · **Utolsó frissítés:** 2026-10-22
 
 A felület nyelvei: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -37,6 +37,9 @@ MIT, az `index.html` fejléce szerint; lásd: `LICENSE`.
 Audit: 2026-10-10
 
 ## Előzmények / Changelog
+
+### 2.2.1 — 2026-10-22
+- A cím, a meta címkék, a lábléc biztonsági figyelmeztetése és az aria-label-ek mostantól a felület nyelvét követik; az fff-kit panel leírása lokalizált.
 
 ### 2.1.0 — 2026-10-14
 - Adatmentés és adatcímkézés (fff-kit).

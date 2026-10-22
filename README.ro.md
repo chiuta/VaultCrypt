@@ -2,7 +2,7 @@
 
 [English](README.md) · **Română** · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versiune:** 2.2.0 · **Ultima actualizare:** 2026-10-19
+**Versiune:** 2.2.1 · **Ultima actualizare:** 2026-10-22
 
 Limbile interfeței: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -37,6 +37,9 @@ MIT, conform antetului din `index.html`; vezi `LICENSE`.
 Audit: 2026-10-10
 
 ## Istoric / Changelog
+
+### 2.2.1 — 2026-10-22
+- Titlul, meta tag-urile, avertismentul de securitate din subsol și aria-label-urile urmează acum limba interfeței; descrierea din panoul fff-kit este localizată.
 
 ### 2.1.0 — 2026-10-14
 - Copie de rezervă și etichetare date (fff-kit).

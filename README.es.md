@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · **Español** · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versión:** 2.2.0 · **Última actualización:** 2026-10-19
+**Versión:** 2.2.1 · **Última actualización:** 2026-10-22
 
 Idiomas de la interfaz: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -37,6 +37,9 @@ MIT, según la cabecera de `index.html`; consulta `LICENSE`.
 Auditoría: 2026-10-10
 
 ## Historial / Changelog
+
+### 2.2.1 — 2026-10-22
+- El título, las metaetiquetas, el aviso de seguridad del pie de página y los aria-label siguen ahora el idioma de la interfaz; la descripción del panel fff-kit está localizada.
 
 ### 2.1.0 — 2026-10-14
 - Copia de seguridad y etiquetado de datos (fff-kit).

@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · **Français** · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Version :** 2.2.1 · **Dernière mise à jour :** 2026-10-22
+**Version :** 2.2.2 · **Dernière mise à jour :** 2026-10-22
 
 Langues de l'interface : **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -37,6 +37,9 @@ MIT, conformément à l'en-tête de `index.html` ; voir `LICENSE`.
 Audit : 2026-10-10
 
 ## Historique / Changelog
+
+### 2.2.2 — 2026-10-22
+- l'étiquette d'accessibilité du sélecteur de langue et le terme « additional authenticated data » (AAD) de la section À propos sont désormais traduits dans toutes les langues.
 
 ### 2.2.1 — 2026-10-22
 - Le titre, les balises meta, l'avertissement de sécurité du pied de page et les aria-label suivent désormais la langue de l'interface ; la description du panneau fff-kit est localisée.

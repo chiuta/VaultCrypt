@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · **Deutsch** · [Magyar](README.hu.md)
 
-**Version:** 2.2.1 · **Zuletzt aktualisiert:** 2026-10-22
+**Version:** 2.2.2 · **Zuletzt aktualisiert:** 2026-10-22
 
 Oberflächensprachen: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -37,6 +37,9 @@ MIT, gemäß dem Header von `index.html`; siehe `LICENSE`.
 Audit: 2026-10-10
 
 ## Verlauf / Changelog
+
+### 2.2.2 — 2026-10-22
+- das Barrierefreiheits-Label der Sprachauswahl und der Begriff „additional authenticated data“ (AAD) im Abschnitt „Über“ sind jetzt in alle Sprachen übersetzt.
 
 ### 2.2.1 — 2026-10-22
 - Titel, Meta-Tags, Sicherheitshinweis in der Fußzeile und aria-labels folgen jetzt der Oberflächensprache; die Beschreibung im fff-kit-Panel ist lokalisiert.

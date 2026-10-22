@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · **Português** · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versão:** 2.2.3 · **Última atualização:** 2026-10-22
+**Versão:** 2.2.4 · **Última atualização:** 2026-10-22
 
 Idiomas da interface: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -13,7 +13,7 @@ Idiomas da interface: **Română, English, Français, Italiano, Español, Portug
 Cifragem/decifragem de ficheiros e texto no navegador, num único `index.html` (8 línguas), mais um gerador de palavras-passe e somas de verificação.
 
 ## Como funciona (segundo o código)
-- Chave derivada da palavra-passe com PBKDF2-HMAC-SHA-256 (310 000 / 600 000 / 1 000 000 de iterações; por omissão «High» = 600 000; o último nível usado ao selar é guardado localmente em `localStorage`, chave `vaultcrypt.sec`), sal aleatório de 16 bytes.
+- Chave derivada da palavra-passe com PBKDF2-HMAC-SHA-256 (600 000 / 1 000 000 de iterações; por omissão «High» = 600 000; o último nível usado ao selar é guardado localmente em `localStorage`, chave `vaultcrypt.sec`), sal aleatório de 16 bytes.
 - Cifragem AES-256-GCM (Web Crypto) com IV aleatório de 12 bytes; o cabeçalho do contentor (39 bytes) é autenticado como dados adicionais.
 - Formato `.vault` (magic `VCRYPT`, versão 1/2) ou bloco de texto «armored» para mensagens.
 - As palavras-passe geradas usam `crypto.getRandomValues`. Somas de verificação: SHA-256/384/512 e SHA-1 (o SHA-1 é fraco; apenas para verificar a integridade de ficheiros, não para segurança).
@@ -37,6 +37,9 @@ MIT, conforme o cabeçalho de `index.html`; ver `LICENSE`.
 Auditoria: 2026-10-10
 
 ## Histórico / Changelog
+
+### 2.2.4 — 2026-10-22
+- fff-kit 1.1.2: PBKDF2 com 600.000 iterações, proteção anti-clickjacking.
 
 ### 2.2.3 — 2026-10-22
 - Segurança: as palavras‑passe com menos de 12 caracteres deixam de ser aceites em silêncio: a aplicação mostra um aviso (traduzido nos 8 idiomas) e exige a confirmação explícita «Selar mesmo assim». O mínimo absoluto continua a ser 4 caracteres.

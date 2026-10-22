@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · **Magyar**
 
-**Verzió:** 2.2.3 · **Utolsó frissítés:** 2026-10-22
+**Verzió:** 2.2.4 · **Utolsó frissítés:** 2026-10-22
 
 A felület nyelvei: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -13,7 +13,7 @@ A felület nyelvei: **Română, English, Français, Italiano, Español, Portugu�
 Fájlok és szövegek titkosítása/visszafejtése a böngészőben, egyetlen `index.html` fájlban (8 nyelv), valamint jelszógenerátor és ellenőrző összegek.
 
 ## Hogyan működik (a kód alapján)
-- A kulcsot a jelszóból PBKDF2-HMAC-SHA-256 származtatja (310 000 / 600 000 / 1 000 000 iteráció; alapértelmezés: „High” = 600 000; a lezáráskor utoljára használt szintet a program helyben, a `localStorage`-ban jegyzi meg, kulcs: `vaultcrypt.sec`), véletlenszerű 16 bájtos sóval.
+- A kulcsot a jelszóból PBKDF2-HMAC-SHA-256 származtatja (600 000 / 1 000 000 iteráció; alapértelmezés: „High” = 600 000; a lezáráskor utoljára használt szintet a program helyben, a `localStorage`-ban jegyzi meg, kulcs: `vaultcrypt.sec`), véletlenszerű 16 bájtos sóval.
 - AES-256-GCM titkosítás (Web Crypto) véletlenszerű 12 bájtos IV-vel; a konténer fejlécét (39 bájt) kiegészítő adatként hitelesíti.
 - `.vault` formátum (magic `VCRYPT`, 1/2. verzió) vagy szöveges „armored” blokk üzenetekhez.
 - A generált jelszavak a `crypto.getRandomValues` függvényt használják. Ellenőrző összegek: SHA-256/384/512 és SHA-1 (az SHA-1 gyenge; csak fájlok sértetlenségének ellenőrzésére használd, biztonsági célra nem).
@@ -37,6 +37,9 @@ MIT, az `index.html` fejléce szerint; lásd: `LICENSE`.
 Audit: 2026-10-10
 
 ## Előzmények / Changelog
+
+### 2.2.4 — 2026-10-22
+- fff-kit 1.1.2: PBKDF2 600 000 iterációval, clickjacking elleni védelem.
 
 ### 2.2.3 — 2026-10-22
 - Biztonság: a 12 karakternél rövidebb jelmondatokat a program már nem fogadja el szó nélkül: figyelmeztetést jelenít meg (mind a 8 nyelvre lefordítva), és kifejezett „Mégis lepecsételem” megerősítést kér. Az abszolút minimum továbbra is 4 karakter.

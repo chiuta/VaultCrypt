@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · **Italiano** · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versione:** 2.2.3 · **Ultimo aggiornamento:** 2026-10-22
+**Versione:** 2.2.4 · **Ultimo aggiornamento:** 2026-10-22
 
 Lingue dell'interfaccia: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -13,7 +13,7 @@ Lingue dell'interfaccia: **Română, English, Français, Italiano, Español, Por
 Cifratura/decifratura di file e testo nel browser, in un unico `index.html` (8 lingue), più un generatore di password e checksum.
 
 ## Come funziona (dal codice)
-- Chiave derivata dalla password con PBKDF2-HMAC-SHA-256 (310.000 / 600.000 / 1.000.000 di iterazioni; predefinito «High» = 600.000; l'ultimo livello usato in fase di sigillatura viene memorizzato localmente in `localStorage`, chiave `vaultcrypt.sec`), salt casuale di 16 byte.
+- Chiave derivata dalla password con PBKDF2-HMAC-SHA-256 (600.000 / 1.000.000 di iterazioni; predefinito «High» = 600.000; l'ultimo livello usato in fase di sigillatura viene memorizzato localmente in `localStorage`, chiave `vaultcrypt.sec`), salt casuale di 16 byte.
 - Cifratura AES-256-GCM (Web Crypto) con IV casuale di 12 byte; l'intestazione del contenitore (39 byte) è autenticata come dati aggiuntivi.
 - Formato `.vault` (magic `VCRYPT`, versione 1/2) oppure blocco testuale «armored» per i messaggi.
 - Le password generate usano `crypto.getRandomValues`. Checksum: SHA-256/384/512 e SHA-1 (SHA-1 è debole; solo per verificare l'integrità dei file, non per la sicurezza).
@@ -37,6 +37,9 @@ MIT, secondo l'intestazione di `index.html`; vedi `LICENSE`.
 Audit: 2026-10-10
 
 ## Cronologia / Changelog
+
+### 2.2.4 — 2026-10-22
+- fff-kit 1.1.2: PBKDF2 a 600.000 iterazioni, protezione anti-clickjacking.
 
 ### 2.2.3 — 2026-10-22
 - Sicurezza: le passphrase di meno di 12 caratteri non sono più accettate in silenzio: l'app mostra un avviso (tradotto nelle 8 lingue) e richiede la conferma esplicita «Sigilla comunque». Il minimo assoluto resta di 4 caratteri.

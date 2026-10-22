@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · **Deutsch** · [Magyar](README.hu.md)
 
-**Version:** 2.2.3 · **Zuletzt aktualisiert:** 2026-10-22
+**Version:** 2.2.4 · **Zuletzt aktualisiert:** 2026-10-22
 
 Oberflächensprachen: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -13,7 +13,7 @@ Oberflächensprachen: **Română, English, Français, Italiano, Español, Portug
 Ver- und Entschlüsselung von Dateien und Text im Browser, in einer einzigen `index.html` (8 Sprachen), dazu ein Passwortgenerator und Prüfsummen.
 
 ## So funktioniert es (laut Code)
-- Schlüsselableitung aus dem Passwort mit PBKDF2-HMAC-SHA-256 (310.000 / 600.000 / 1.000.000 Iterationen; Standard „High“ = 600.000; die beim Versiegeln zuletzt verwendete Stufe wird lokal in `localStorage` gespeichert, Schlüssel `vaultcrypt.sec`), zufälliger 16-Byte-Salt.
+- Schlüsselableitung aus dem Passwort mit PBKDF2-HMAC-SHA-256 (600.000 / 1.000.000 Iterationen; Standard „High“ = 600.000; die beim Versiegeln zuletzt verwendete Stufe wird lokal in `localStorage` gespeichert, Schlüssel `vaultcrypt.sec`), zufälliger 16-Byte-Salt.
 - AES-256-GCM-Verschlüsselung (Web Crypto) mit zufälligem 12-Byte-IV; der Container-Header (39 Byte) wird als zusätzliche Daten authentifiziert.
 - Format `.vault` (Magic `VCRYPT`, Version 1/2) oder ein textuell „gepanzerter“ (armored) Block für Nachrichten.
 - Generierte Passwörter verwenden `crypto.getRandomValues`. Prüfsummen: SHA-256/384/512 und SHA-1 (SHA-1 ist schwach; nur zur Integritätsprüfung von Dateien, nicht für Sicherheitszwecke).
@@ -37,6 +37,9 @@ MIT, gemäß dem Header von `index.html`; siehe `LICENSE`.
 Audit: 2026-10-10
 
 ## Verlauf / Changelog
+
+### 2.2.4 — 2026-10-22
+- fff-kit 1.1.2: PBKDF2 mit 600.000 Iterationen, Schutz vor Clickjacking.
 
 ### 2.2.3 — 2026-10-22
 - Sicherheit: Passphrasen mit weniger als 12 Zeichen werden nicht mehr stillschweigend akzeptiert: Die App zeigt eine Warnung (in alle 8 Sprachen übersetzt) und verlangt die ausdrückliche Bestätigung „Trotzdem versiegeln“. Das absolute Minimum bleibt bei 4 Zeichen.

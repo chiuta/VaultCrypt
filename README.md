@@ -2,7 +2,7 @@
 
 **English** · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Version:** 2.2.3 · **Last updated:** 2026-10-22
+**Version:** 2.2.4 · **Last updated:** 2026-10-22
 
 Interface languages: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -13,7 +13,7 @@ Interface languages: **Română, English, Français, Italiano, Español, Portugu
 In-browser encryption/decryption of files and text, in a single `index.html` (8 languages), plus a password generator and checksums.
 
 ## How it works (from the code)
-- Key derived from the password with PBKDF2-HMAC-SHA-256 (310,000 / 600,000 / 1,000,000 iterations; default "High" = 600,000; the last level used when sealing is remembered locally in `localStorage`, key `vaultcrypt.sec`), random 16-byte salt.
+- Key derived from the password with PBKDF2-HMAC-SHA-256 (600,000 / 1,000,000 iterations; default "High" = 600,000; the last level used when sealing is remembered locally in `localStorage`, key `vaultcrypt.sec`), random 16-byte salt.
 - AES-256-GCM encryption (Web Crypto) with a random 12-byte IV; the container header (39 bytes) is authenticated as additional data.
 - `.vault` format (magic `VCRYPT`, version 1/2) or a text "armored" block for messages.
 - Generated passwords use `crypto.getRandomValues`. Checksums: SHA-256/384/512 and SHA-1 (SHA-1 is weak; use it only to verify file integrity, not for security).
@@ -37,6 +37,9 @@ MIT, per the header of `index.html`; see `LICENSE`.
 Audit: 2026-10-10
 
 ## History / Changelog
+
+### 2.2.4 — 2026-10-22
+- fff-kit 1.1.2: PBKDF2 600,000 iterations, anti-clickjacking protection.
 
 ### 2.2.3 — 2026-10-22
 - Security: passphrases shorter than 12 characters are no longer accepted silently: the app shows a warning (translated into all 8 languages) and requires an explicit "Seal anyway" confirmation. The absolute minimum stays at 4 characters.

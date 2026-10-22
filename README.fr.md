@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · **Français** · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Version :** 2.2.3 · **Dernière mise à jour :** 2026-10-22
+**Version :** 2.2.4 · **Dernière mise à jour :** 2026-10-22
 
 Langues de l'interface : **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -13,7 +13,7 @@ Langues de l'interface : **Română, English, Français, Italiano, Español, Por
 Chiffrement/déchiffrement de fichiers et de texte dans le navigateur, dans un seul `index.html` (8 langues), avec en plus un générateur de mots de passe et des sommes de contrôle.
 
 ## Fonctionnement (d'après le code)
-- Clé dérivée du mot de passe avec PBKDF2-HMAC-SHA-256 (310 000 / 600 000 / 1 000 000 d'itérations ; par défaut « High » = 600 000 ; le dernier niveau utilisé lors du scellement est mémorisé localement dans `localStorage`, clé `vaultcrypt.sec`), sel aléatoire de 16 octets.
+- Clé dérivée du mot de passe avec PBKDF2-HMAC-SHA-256 (600 000 / 1 000 000 d'itérations ; par défaut « High » = 600 000 ; le dernier niveau utilisé lors du scellement est mémorisé localement dans `localStorage`, clé `vaultcrypt.sec`), sel aléatoire de 16 octets.
 - Chiffrement AES-256-GCM (Web Crypto) avec un IV aléatoire de 12 octets ; l'en-tête du conteneur (39 octets) est authentifié en tant que données additionnelles.
 - Format `.vault` (magic `VCRYPT`, version 1/2) ou bloc texte « blindé » (armored) pour les messages.
 - Les mots de passe générés utilisent `crypto.getRandomValues`. Sommes de contrôle : SHA-256/384/512 et SHA-1 (SHA-1 est faible ; à utiliser uniquement pour vérifier l'intégrité des fichiers, pas pour la sécurité).
@@ -37,6 +37,9 @@ MIT, conformément à l'en-tête de `index.html` ; voir `LICENSE`.
 Audit : 2026-10-10
 
 ## Historique / Changelog
+
+### 2.2.4 — 2026-10-22
+- fff-kit 1.1.2 : PBKDF2 à 600 000 itérations, protection anti-clickjacking.
 
 ### 2.2.3 — 2026-10-22
 - Sécurité : les phrases secrètes de moins de 12 caractères ne sont plus acceptées silencieusement : l'application affiche un avertissement (traduit dans les 8 langues) et exige la confirmation explicite « Sceller quand même ». Le minimum absolu reste de 4 caractères.

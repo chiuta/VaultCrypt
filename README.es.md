@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · **Español** · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versión:** 2.2.3 · **Última actualización:** 2026-10-22
+**Versión:** 2.2.4 · **Última actualización:** 2026-10-22
 
 Idiomas de la interfaz: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -13,7 +13,7 @@ Idiomas de la interfaz: **Română, English, Français, Italiano, Español, Port
 Cifrado/descifrado de archivos y texto en el navegador, en un único `index.html` (8 idiomas), más un generador de contraseñas y sumas de verificación.
 
 ## Cómo funciona (según el código)
-- Clave derivada de la contraseña con PBKDF2-HMAC-SHA-256 (310.000 / 600.000 / 1.000.000 de iteraciones; por defecto «High» = 600.000; el último nivel usado al sellar se recuerda localmente en `localStorage`, clave `vaultcrypt.sec`), sal aleatoria de 16 bytes.
+- Clave derivada de la contraseña con PBKDF2-HMAC-SHA-256 (600.000 / 1.000.000 de iteraciones; por defecto «High» = 600.000; el último nivel usado al sellar se recuerda localmente en `localStorage`, clave `vaultcrypt.sec`), sal aleatoria de 16 bytes.
 - Cifrado AES-256-GCM (Web Crypto) con IV aleatorio de 12 bytes; la cabecera del contenedor (39 bytes) se autentica como datos adicionales.
 - Formato `.vault` (magic `VCRYPT`, versión 1/2) o bloque de texto «armored» para mensajes.
 - Las contraseñas generadas usan `crypto.getRandomValues`. Sumas de verificación: SHA-256/384/512 y SHA-1 (SHA-1 es débil; solo para comprobar la integridad de archivos, no para seguridad).
@@ -37,6 +37,9 @@ MIT, según la cabecera de `index.html`; consulta `LICENSE`.
 Auditoría: 2026-10-10
 
 ## Historial / Changelog
+
+### 2.2.4 — 2026-10-22
+- fff-kit 1.1.2: PBKDF2 con 600.000 iteraciones, protección anti-clickjacking.
 
 ### 2.2.3 — 2026-10-22
 - Seguridad: las contraseñas de menos de 12 caracteres ya no se aceptan en silencio: la aplicación muestra una advertencia (traducida a los 8 idiomas) y exige la confirmación explícita «Sellar de todos modos». El mínimo absoluto sigue siendo de 4 caracteres.

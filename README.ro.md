@@ -2,7 +2,7 @@
 
 [English](README.md) · **Română** · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versiune:** 2.2.8 · **Ultima actualizare:** 2026-10-26
+**Versiune:** 3.0.0 · **Ultima actualizare:** 2026-10-26
 
 Limbile interfeței: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -18,9 +18,14 @@ Criptare/decriptare de fișiere și text în browser, într-un singur `index.htm
 - Format `.vault` (magic `VCRYPT`, versiune 1/2) sau bloc „armurat” text pentru mesaje.
 - Parolele generate folosesc `crypto.getRandomValues`. Sume de control: SHA-256/384/512 și SHA-1 (SHA-1 este slab; doar pentru verificarea integrității fișierelor, nu pentru securitate).
 
+## Seif cu secrete partajate (3.0.0)
+- Fila **Părți** împarte parola seifului (sau orice secret scurt, până la 1024 de octeți) în n părți, oricare k reconstruiesc secretul (schema Shamir peste GF(2^8), coeficienți aleatori din `crypto.getRandomValues`); fiecare parte se afișează ca text `VCS1:…` și cod QR, se poate tipări (una pe pagină), descărca (SVG) și citi înapoi cu camera sau din imagini. Se verifică imediat că recombinarea reproduce exact secretul.
+- Formatul `.vault` și criptarea (PBKDF2-SHA-256 + AES-256-GCM, WebCrypto) sunt neschimbate: se împarte doar parola. În **Instrumente**, „Verificare structură seif” citește antetul fără parolă (nu poate confirma conținutul: asta o face doar deschiderea cu parola).
+
 ## Avertismente
 - **Neauditat independent.** Cod scris de un singur autor, fără audit de securitate extern; nu-l folosi ca unică protecție pentru date critice.
-- **Parolă pierdută = date pierdute.** Nu există recuperare. Păstrează copii de siguranță și parola într-un loc sigur.
+- **Parolă pierdută = date pierdute**, cu excepția cazului în care ai creat din timp părți de recuperare (vezi mai jos). Păstrează copii de siguranță și parola într-un loc sigur.
+- **Părțile de recuperare (Shamir) nu sunt auditate independent.** Cere un audit independent înainte să te bazezi pe ele pentru date critice. Părțile nu sunt criptate: cine adună k părți poate reconstrui parola.
 - Parola rămâne în memoria browserului pe durata sesiunii; un dispozitiv compromis (malware, extensii) anulează protecția.
 
 ## Date și confidențialitate

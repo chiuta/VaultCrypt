@@ -13,10 +13,11 @@
     "Web Crypto"
   ],
   "storageKeys": [
-    "vaultcrypt.lang"
+    "vaultcrypt.lang",
+    "vaultcrypt.sec"
   ],
-  "sizeBytes": 276271,
-  "sha256": "8ff592dcb6296e53eeaef0ada6ed9a4a5f1a6e283cd8cef8206ec595c2034d67",
+  "sizeBytes": 276288,
+  "sha256": "3959f1a6eb70206a31eba775f38d9efb6989d84b949291699a075fe60d5fe7b9",
   "csp": {
     "present": true,
     "directives": {

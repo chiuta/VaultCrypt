@@ -2,7 +2,9 @@
 
 [English](README.md) · **Română** · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versiune:** 3.0.0 · **Ultima actualizare:** 2026-10-26
+**Versiune:** 3.0.1 · **Ultima actualizare:** 2026-10-27
+
+**Stare:** experimental · **Offline:** complet
 
 Limbile interfeței: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -21,6 +23,45 @@ Criptare/decriptare de fișiere și text în browser, într-un singur `index.htm
 ## Seif cu secrete partajate (3.0.0)
 - Fila **Părți** împarte parola seifului (sau orice secret scurt, până la 1024 de octeți) în n părți, oricare k reconstruiesc secretul (schema Shamir peste GF(2^8), coeficienți aleatori din `crypto.getRandomValues`); fiecare parte se afișează ca text `VCS1:…` și cod QR, se poate tipări (una pe pagină), descărca (SVG) și citi înapoi cu camera sau din imagini. Se verifică imediat că recombinarea reproduce exact secretul.
 - Formatul `.vault` și criptarea (PBKDF2-SHA-256 + AES-256-GCM, WebCrypto) sunt neschimbate: se împarte doar parola. În **Instrumente**, „Verificare structură seif” citește antetul fără parolă (nu poate confirma conținutul: asta o face doar deschiderea cu parola).
+
+## Detalii criptografice și formatul fișierului (citite din cod, 3.0.1)
+
+> **Neauditat independent.** Schema de mai jos este documentată exact așa cum o implementează codul actual. Este o descriere, nu o garanție de securitate, și nu a fost revizuită de un criptograf extern.
+
+**Derivarea cheii (KDF)**
+- Algoritm: **PBKDF2** cu HMAC-SHA-256 (`deriveKey` din Web Crypto). **Argon2 / scrypt nu sunt folosite.**
+- Iterații: **600.000** („High”, implicit) sau **1.000.000** („Paranoid”). Numărul este scris în antetul containerului; la deschidere se acceptă valori de la 1 la 10.000.000 (altfel se refuză, ca un antet fabricat să nu blocheze browserul). Containere mai vechi pot avea numere mai mici (ex. 310.000) și se deschid în continuare.
+- Sare: 16 octeți aleatori (`crypto.getRandomValues`), nouă la fiecare container.
+- Parola: octeții UTF-8 ai textului exact cum a fost tastat, **fără normalizare Unicode** (copia de siguranță `.fff.json`, o funcție separată, normalizează în NFC). Minimum 4 caractere; sub 12 aplicația avertizează și cere „Sigilează oricum”.
+- Cheia derivată: AES-256, neexportabilă.
+
+**Criptare**
+- **AES-256-GCM** (Web Crypto), IV aleator de 12 octeți, etichetă de autentificare de 128 de biți (valoarea implicită Web Crypto; codul nu setează `tagLength`).
+- Date adiționale autentificate (AAD): tot antetul necriptat de 39 de octeți; schimbarea iterațiilor, a sării sau a IV-ului face decriptarea să eșueze.
+- Parola greșită și un fișier deteriorat sau modificat dau același eșec GCM; aplicația nu le poate deosebi.
+
+**Structura containerului `.vault` (versiunea 2; aceiași octeți se folosesc în blocul text „armurat”)**
+
+| Octeți | Conținut |
+|---|---|
+| 0-5 | semnătura `VCRYPT` (`56 43 52 59 50 54`) |
+| 6 | versiune (`2`; containerele versiunii `1` se citesc în continuare) |
+| 7-10 | iterații PBKDF2, întreg fără semn pe 32 de biți, big-endian |
+| 11-26 | sare, 16 octeți |
+| 27-38 | IV, 12 octeți |
+| 39+ | text criptat AES-GCM urmat de eticheta de 16 octeți |
+
+Conținutul înainte de criptare (v2): `număr de fișiere` (uint16 BE), apoi pentru fiecare fișier `lungime nume` (uint16 BE), `nume` (UTF-8), `lungime date` (uint32 BE), `date`. Limite în format: 65.535 de fișiere, 65.535 de octeți per nume, sub 4 GiB per fișier; aplicația se oprește la circa 400 MB per operație. Versiunea 1: un singur fișier, `lungime nume` (uint16 BE) + `nume` + date. Pentru un mesaj text, singura intrare are numele gol.
+
+**Bloc text „armurat”**: `-----BEGIN VAULTCRYPT MESSAGE-----`, containerul în Base64 împărțit la 64 de caractere, `-----END VAULTCRYPT MESSAGE-----`.
+
+**Ce nu ascunde containerul**: dimensiunea (lungimea textului criptat arată lungimea originală; nu există umplutură), numărul de iterații și faptul că este un container VaultCrypt (octeții de semnătură). Numele fișierelor și numărul lor sunt în partea criptată. Nu există compresie, fișier-cheie sau recuperare.
+
+**Părți de recuperare (Shamir, fila „Părți”)**: împart doar parola (sau alt secret scurt, până la 1024 de octeți); nu schimbă formatul containerului. Shamir (k, n) peste GF(2^8) cu polinomul AES 0x11B, coeficienți aleatori din `crypto.getRandomValues`, n până la 16, x = 1..n. Secretul este completat până la multiplu de 64 de octeți și o etichetă de verificare de 4 octeți (SHA-256 din `"VCS1"` plus partea completată) este împărțită împreună cu el. Textul unei părți: `VCS1:` + grupe Base32 (și ca cod QR), cu un CRC care detectează doar greșelile de tastare. Părțile **nu sunt criptate**: cine are k dintre ele poate reface secretul.
+
+**Copia de siguranță criptată a datelor aplicației (`.fff.json`, fff-kit)**: PBKDF2-HMAC-SHA-256 cu 600.000 de iterații (la import se acceptă 100.000 – 5.000.000), sare de 16 octeți, AES-256-GCM cu IV de 12 octeți, AAD `fff-bundle-enc|1|<slug aplicație>`, parola normalizată NFC, minimum 12 caractere. Plic JSON: `format`, `schema`, `app`, `kdf`, `iter`, `salt`, `iv`, `ct` (Base64).
+
+**Planificat / nefăcut**: audit de securitate independent (necesită un expert extern) și o opțiune Argon2 (ar schimba formatul și nu este implementată; ar cere o nouă versiune de format).
 
 ## Avertismente
 - **Neauditat independent.** Cod scris de un singur autor, fără audit de securitate extern; nu-l folosi ca unică protecție pentru date critice.

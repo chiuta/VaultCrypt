@@ -2,7 +2,9 @@
 
 **English** · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Version:** 3.0.0 · **Last updated:** 2026-10-26
+**Version:** 3.0.1 · **Last updated:** 2026-10-27
+
+**Status:** experimental · **Offline:** complete
 
 Interface languages: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -17,6 +19,45 @@ In-browser encryption/decryption of files and text, in a single `index.html` (8 
 - AES-256-GCM encryption (Web Crypto) with a random 12-byte IV; the container header (39 bytes) is authenticated as additional data.
 - `.vault` format (magic `VCRYPT`, version 1/2) or a text "armored" block for messages.
 - Generated passwords use `crypto.getRandomValues`. Checksums: SHA-256/384/512 and SHA-1 (SHA-1 is weak; use it only to verify file integrity, not for security).
+
+## Cryptographic details and file format (read from the code, 3.0.1)
+
+> **Not independently audited.** The scheme below is documented exactly as the current code implements it. It is a description, not a security guarantee, and it has not been reviewed by an outside cryptographer.
+
+**Key derivation (KDF)**
+- Algorithm: **PBKDF2** with HMAC-SHA-256 (Web Crypto `deriveKey`). **Argon2 / scrypt are not used.**
+- Iterations: **600,000** ("High", default) or **1,000,000** ("Paranoid"). The count is stored in the container header; when opening, values from 1 to 10,000,000 are accepted (anything else is refused to avoid a crafted header freezing the browser). Older containers may carry lower counts (e.g. 310,000) and still open.
+- Salt: 16 random bytes (`crypto.getRandomValues`), new for every container.
+- Passphrase: the UTF-8 bytes of the text exactly as typed, **without Unicode normalization** (the `.fff.json` backup, a separate feature, does normalize to NFC). Minimum 4 characters; below 12 the app warns and asks for an explicit "Seal anyway".
+- Derived key: AES-256, non-extractable.
+
+**Encryption**
+- **AES-256-GCM** (Web Crypto), random 12-byte IV, 128-bit authentication tag (the Web Crypto default; the code does not set `tagLength`).
+- Additional authenticated data (AAD): the whole 39-byte cleartext header, so changing the iteration count, salt or IV makes decryption fail.
+- A wrong passphrase and a damaged or tampered file give the same GCM failure; the app cannot tell them apart.
+
+**`.vault` container layout (version 2; the same bytes are used for the armored text block)**
+
+| Bytes | Content |
+|---|---|
+| 0-5 | magic `VCRYPT` (`56 43 52 59 50 54`) |
+| 6 | version (`2`; version `1` containers are still read) |
+| 7-10 | PBKDF2 iterations, unsigned 32-bit big-endian |
+| 11-26 | salt, 16 bytes |
+| 27-38 | IV, 12 bytes |
+| 39+ | AES-GCM ciphertext followed by the 16-byte tag |
+
+Plaintext before encryption (v2): `file count` (uint16 BE), then for each file `name length` (uint16 BE), `name` (UTF-8), `data length` (uint32 BE), `data`. Limits in the format: 65,535 files, 65,535 bytes per name, under 4 GiB per file; the app itself stops at about 400 MB per operation. Version 1: a single file, `name length` (uint16 BE) + `name` + data. For a text message the single entry has an empty name.
+
+**Armored text block**: `-----BEGIN VAULTCRYPT MESSAGE-----`, the container in Base64 wrapped at 64 characters, `-----END VAULTCRYPT MESSAGE-----`.
+
+**What the container does not hide**: its size (the ciphertext length reveals the plaintext length; there is no padding), the iteration count, and the fact that it is a VaultCrypt container (magic bytes). File names and the number of files are inside the encrypted part. There is no compression, no key file and no recovery.
+
+**Recovery shares (Shamir, tab "Shares")**: split only the passphrase (or another short secret, up to 1024 bytes), they do not change the container format. Shamir (k, n) over GF(2^8) with the AES polynomial 0x11B, fresh random coefficients from `crypto.getRandomValues`, n up to 16, x = 1..n. The secret is padded to a multiple of 64 bytes and a 4-byte check tag (SHA-256 of `"VCS1"` plus the padded part) is shared with it. Share text: `VCS1:` + Base32 groups (also as a QR code), with a CRC that only detects typos. Shares are **not encrypted**: anyone holding k of them can rebuild the secret.
+
+**Encrypted backup of app data (`.fff.json`, fff-kit)**: PBKDF2-HMAC-SHA-256 with 600,000 iterations (accepted on import: 100,000 to 5,000,000), 16-byte salt, AES-256-GCM with a 12-byte IV, AAD `fff-bundle-enc|1|<app slug>`, passphrase normalized to NFC, minimum 12 characters. JSON envelope: `format`, `schema`, `app`, `kdf`, `iter`, `salt`, `iv`, `ct` (Base64).
+
+**Planned / not done**: an independent security audit (needs an outside expert) and an Argon2 option (it would change the format and is not implemented; a new format version would be needed).
 
 ## Warnings
 - **Not independently audited.** Code written by a single author, with no external security audit; do not use it as the sole protection for critical data.

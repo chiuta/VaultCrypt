@@ -2,7 +2,7 @@
 
 **English** · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Version:** 3.0.1 · **Last updated:** 2026-10-27
+**Version:** 3.1.0 · **Last updated:** 2026-10-27
 
 **Status:** experimental · **Offline:** complete
 
@@ -17,15 +17,15 @@ In-browser encryption/decryption of files and text, in a single `index.html` (8 
 ## How it works (from the code)
 - Key derived from the password with PBKDF2-HMAC-SHA-256 (600,000 / 1,000,000 iterations; default "High" = 600,000; the last level used when sealing is remembered locally in `localStorage`, key `vaultcrypt.sec`), random 16-byte salt.
 - AES-256-GCM encryption (Web Crypto) with a random 12-byte IV; the container header (39 bytes) is authenticated as additional data.
-- `.vault` format (magic `VCRYPT`, version 1/2) or a text "armored" block for messages.
+- `.vault` format (magic `VCRYPT`, version 1/2, and 3 for the optional Argon2id levels) or a text "armored" block for messages.
 - Generated passwords use `crypto.getRandomValues`. Checksums: SHA-256/384/512 and SHA-1 (SHA-1 is weak; use it only to verify file integrity, not for security).
 
-## Cryptographic details and file format (read from the code, 3.0.1)
+## Cryptographic details and file format (read from the code, 3.1.0)
 
 > **Not independently audited.** The scheme below is documented exactly as the current code implements it. It is a description, not a security guarantee, and it has not been reviewed by an outside cryptographer.
 
 **Key derivation (KDF)**
-- Algorithm: **PBKDF2** with HMAC-SHA-256 (Web Crypto `deriveKey`). **Argon2 / scrypt are not used.**
+- Default algorithm: **PBKDF2** with HMAC-SHA-256 (Web Crypto `deriveKey`); containers v1/v2 are unchanged. Since 3.1.0 there is also an **optional Argon2id** level (see below); scrypt is not used.
 - Iterations: **600,000** ("High", default) or **1,000,000** ("Paranoid"). The count is stored in the container header; when opening, values from 1 to 10,000,000 are accepted (anything else is refused to avoid a crafted header freezing the browser). Older containers may carry lower counts (e.g. 310,000) and still open.
 - Salt: 16 random bytes (`crypto.getRandomValues`), new for every container.
 - Passphrase: the UTF-8 bytes of the text exactly as typed, **without Unicode normalization** (the `.fff.json` backup, a separate feature, does normalize to NFC). Minimum 4 characters; below 12 the app warns and asks for an explicit "Seal anyway".
@@ -57,7 +57,14 @@ Plaintext before encryption (v2): `file count` (uint16 BE), then for each file `
 
 **Encrypted backup of app data (`.fff.json`, fff-kit)**: PBKDF2-HMAC-SHA-256 with 600,000 iterations (accepted on import: 100,000 to 5,000,000), 16-byte salt, AES-256-GCM with a 12-byte IV, AAD `fff-bundle-enc|1|<app slug>`, passphrase normalized to NFC, minimum 12 characters. JSON envelope: `format`, `schema`, `app`, `kdf`, `iter`, `salt`, `iv`, `ct` (Base64).
 
-**Planned / not done**: an independent security audit (needs an outside expert) and an Argon2 option (it would change the format and is not implemented; a new format version would be needed).
+**Optional Argon2id (3.1.0, new `.vault` version 3)**
+- Chosen in "Security level": *Argon2id - 64 MiB, 3 passes* or *256 MiB, 3 passes* (parallelism 1). Argon2id is memory-hard, so it is slower and needs RAM; it runs in JavaScript (measured in our sandbox: about 3 s for 64 MiB in Node and about 10 s in headless Chromium; real phones were not tested and can be slower, and 256 MiB may fail on low-memory devices).
+- Key = Argon2id (RFC 9106, version 0x13, no secret/associated data) of the UTF-8 passphrase and the 16-byte salt, 32-byte output, used directly as the AES-256-GCM key. The default stays PBKDF2.
+- Header of **version 3 = 44 bytes**: bytes 0-38 as in version 2 except byte 6 = `3` and bytes 7-10 = number of passes *t*; bytes 39-42 = memory in KiB (uint32 BE); byte 43 = parallelism *p*. AAD = the whole 44-byte header; ciphertext + 16-byte tag start at byte 44. When opening, limits are enforced before any derivation: *t* 1-20, *p* 1-16, memory 8p KiB to 1 GiB (a crafted header cannot ask for more).
+- Compatibility: v1/v2 (PBKDF2) containers still open and are still produced by the PBKDF2 levels; **older copies of the app cannot open v3** (they refuse the unknown version).
+- Implementation: our own compact Argon2id + BLAKE2b in the same file (no library). Verified by `tests/argon2.test.mjs`: the official RFC 9106 test vectors (Argon2d, Argon2i, Argon2id), BLAKE2b against Node's implementation and the RFC 7693 example, the argon2-cffi reference implementation (Python, if installed) for p = 1 and 2, a v1/v2 container built independently with `node:crypto` still opening, a v3 container built independently (key from argon2-cffi, AES-GCM from `node:crypto`) opening, and tampered/absurd headers being refused. **This is a test result, not an audit**: the implementation is still not independently reviewed and has not been tested for side channels (JavaScript offers no constant-time guarantee).
+
+**Planned / not done**: an independent security audit (needs an outside expert). Argon2id is implemented as an option (3.1.0); it is not the default.
 
 ## Warnings
 - **Not independently audited.** Code written by a single author, with no external security audit; do not use it as the sole protection for critical data.

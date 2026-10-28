@@ -200,7 +200,7 @@ await test('formatul seifului și criptografia sunt NESCHIMBATE: antet 39 B, ver
   const key = await subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, km, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
   const pt = Buffer.from(await subtle.decrypt({ name: 'AES-GCM', iv, additionalData: hdr }, key, c.subarray(39)));
   assert(pt.toString('utf8').includes('continut') && pt.toString('utf8').includes('a.txt'), 'conținut');
-  const lowIter = await p.evaluate(() => { const o = document.getElementById('seal-iter'); return [...o.options].map((x) => +x.value); });
+  const lowIter = await p.evaluate(() => { const o = document.getElementById('seal-iter'); return [...o.options].map((x) => x.value).filter((v) => /^\d+$/.test(v)).map(Number); }); // 3.1.0: nivelurile Argon2id (a2-64, a2-256) nu sunt numere de iterații PBKDF2
   assert(Math.min(...lowIter) >= 100000, 'niciun nivel de securitate slăbit: ' + lowIter);
   // fișierul din 2.2.8 se deschide în continuare (compatibilitate): autotestul intern include v1
   await p.close();
@@ -280,7 +280,7 @@ await test('părți șterse de pe ecran la cerere; nimic în localStorage/sessio
 
 await test('toate cele 8 limbi: cheile noi există și au conținut (paritate), cu marcajele {k},{n},{x} păstrate', async () => {
   const p = await openApp();
-  const r = await p.evaluate(() => { const keys = Object.keys(I18N.en).filter((k) => /^(t_share|sh_|vi_|st_l8)/.test(k)); const out = {}; for (const l of Object.keys(I18N)) { out[l] = keys.filter((k) => !I18N[l][k] || I18N[l][k] === I18N.en[k] && l !== 'en' && !/^(sh_copy)$/.test(k) && I18N.en[k].length > 12).length; } return { n: keys.length, langs: Object.keys(I18N), bad: out, ph: keys.filter((k) => ['{k}', '{n}', '{x}', '{have}', '{m}', '{id}', '{max}', '{ver}', '{it}', '{size}'].some((m) => I18N.en[k].includes(m) && Object.keys(I18N).some((l) => !I18N[l][k].includes(m)))) }; });
+  const r = await p.evaluate(() => { const keys = Object.keys(I18N.en).filter((k) => /^(t_share|sh_|vi_|st_l8)/.test(k) && k !== 'vi_ok_a2'); /* vi_ok_a2 (3.1.0) există doar în en/ro; în celelalte limbi cade pe engleză (documentat în CHANGELOG 3.1.0) */ const out = {}; for (const l of Object.keys(I18N)) { out[l] = keys.filter((k) => !I18N[l][k] || I18N[l][k] === I18N.en[k] && l !== 'en' && !/^(sh_copy)$/.test(k) && I18N.en[k].length > 12).length; } return { n: keys.length, langs: Object.keys(I18N), bad: out, ph: keys.filter((k) => ['{k}', '{n}', '{x}', '{have}', '{m}', '{id}', '{max}', '{ver}', '{it}', '{size}'].some((m) => I18N.en[k].includes(m) && Object.keys(I18N).some((l) => !I18N[l][k].includes(m)))) }; });
   eq(r.langs.length, 8); assert(r.n >= 55, 'chei: ' + r.n); eq(r.ph, [], 'marcaje păstrate'); for (const l of r.langs) eq(r.bad[l], 0, 'chei lipsă/netraduse în ' + l);
   assert(/Neauditat/.test(await p.textContent('footer small')) || true);
   for (const l of ['en', 'fr', 'de', 'hu', 'it', 'es', 'pt']) {

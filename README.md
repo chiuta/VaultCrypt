@@ -2,7 +2,7 @@
 
 **English** · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Version:** 3.1.0 · **Last updated:** 2026-10-27
+**Version:** 3.1.1 · **Last updated:** 2026-10-28
 
 **Status:** experimental · **Offline:** complete
 
@@ -23,6 +23,8 @@ In-browser encryption/decryption of files and text, in a single `index.html` (8 
 ## Cryptographic details and file format (read from the code, 3.1.0)
 
 > **Not independently audited.** The scheme below is documented exactly as the current code implements it. It is a description, not a security guarantee, and it has not been reviewed by an outside cryptographer.
+
+> **Code review by an AI, not an audit.** A cryptographic code review was done by Claude (AI) on request: see [`docs/REVIZUIRE-CRIPTO.md`](docs/REVIZUIRE-CRIPTO.md) (Romanian, with an English summary at the top) for the threat model, what was checked, findings by severity, what could not be verified, and limits. It is **not** an independent audit, does not replace one, and does not declare the application secure. 3.1.1 fixes three small defects found in that review without changing the file format.
 
 **Key derivation (KDF)**
 - Default algorithm: **PBKDF2** with HMAC-SHA-256 (Web Crypto `deriveKey`); containers v1/v2 are unchanged. Since 3.1.0 there is also an **optional Argon2id** level (see below); scrypt is not used.
@@ -72,7 +74,7 @@ Plaintext before encryption (v2): `file count` (uint16 BE), then for each file `
 - The password stays in the browser's memory for the duration of the session; a compromised device (malware, extensions) defeats the protection.
 
 ## Data and privacy
-No network requests: the page has a CSP with `connect-src 'self'`, and `fetch`/`XMLHttpRequest`/`sendBeacon` are blocked in the code ("Privacy audit" log in the page). No telemetry, no external fonts or scripts. Checked in the audit: 0 external requests on load. The only external links are those in the footer and in the "About" window (they open only on click).
+No network requests: the page has a CSP with `connect-src 'self'`, and `fetch`/`XMLHttpRequest`/`sendBeacon` are blocked in the code ("Privacy audit" log in the page). No telemetry, no external fonts or scripts. Checked in the project's own tests (not an independent audit): 0 external requests on load. The only external links are those in the footer and in the "About" window (they open only on click).
 
 ## Limitations
 Files are read entirely into memory (several times over during encryption): practical limit 400 MB per operation (tested: 380 MB OK, ≈860 MB freezes the tab). For larger files, use a desktop tool.
@@ -82,9 +84,12 @@ The CSP no longer allows `'unsafe-inline'` for scripts: the page's single script
 ## License
 MIT, per the header of `index.html`; see `LICENSE`.
 
-Audit: 2026-10-10
+Internal check (not an independent audit): 2026-10-10
 
 ## History / Changelog
+
+### 3.1.1 — 2026-10-28
+- Cryptographic code review by Claude (AI), on request - **not an independent audit**: report in `docs/REVIZUIRE-CRIPTO.md`. Fixes (file format unchanged, 3.0.1/3.1.0 files still open): strict bounds checking of the decrypted payload; Ctrl+Enter no longer starts overlapping key derivations; a confirmed weak passphrase is no longer kept in a global variable. New tests `tests/cripto.test.mjs`, `tests/cripto-ui.mjs`.
 
 ### 2.2.5 — 2026-10-22
 - fff-kit 1.1.4: touch targets and minimum text size; touch targets/text fixed

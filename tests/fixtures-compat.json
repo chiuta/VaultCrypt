@@ -1,0 +1,61 @@
+{
+ "generator": "VaultCrypt 3.1.0 (c712ac8), generat din interfața aplicației (Playwright)",
+ "items": [
+  {
+   "label": "v2 PBKDF2 600000, text (armat)",
+   "pass": "Parolă-ț-ș-2026!",
+   "level": "600000",
+   "armored": "-----BEGIN VAULTCRYPT MESSAGE-----\nVkNSWVBUAgAJJ8CwoXG/+oLAX6ctOm3RwqttCmPWLhHxvmQQk1EpAQPYKx+WLXoB\nms3bMJz8Fd17Ca4/7TTipBUtdGyenCdsX+0ppSW/bzUxV1D/MAR0FEnn/ijteBov\no40FOyBsxceW6Dz0Kg==\n-----END VAULTCRYPT MESSAGE-----",
+   "b64": null,
+   "expect": [
+    {
+     "name": "",
+     "text": "Mesaj secret ăâîșț 🔐 — fixture 3.1.0"
+    }
+   ]
+  },
+  {
+   "label": "v2 PBKDF2 600000, 2 fișiere",
+   "pass": "altă parolă lungă 12345",
+   "level": "600000",
+   "armored": null,
+   "b64": "VkNSWVBUAgAJJ8B8Q6fKyArgvYw/bI/X+HczDOPW5GZKwTtdPfTYsx2dF+Gkd1b+dPrDPGFPSadbTYyYu+bQCSsEdX9L4qHWWzwl7NJTzgkmyZl0TTnXUj3ntANtNwfz0w==",
+   "expect": [
+    {
+     "name": "a.txt",
+     "text": "alfa"
+    },
+    {
+     "name": "dir ș/b.bin",
+     "text": "beta\n\u0000\u0001"
+    }
+   ]
+  },
+  {
+   "label": "v3 Argon2id 64 MiB x3, text (armat)",
+   "pass": "Parolă-ț-ș-2026!",
+   "level": "a2-64",
+   "armored": "-----BEGIN VAULTCRYPT MESSAGE-----\nVkNSWVBUAwAAAAPsynLak3r5r4kj7BbYOzPjHOtSM9gAo7T2zhA+AAEAAAH5NSfz\nD7o/E+zbYOhxh11h6/Zh4w1pwnliysrEwGbSk0ri5j+pBaDoD+Kagwmu\n-----END VAULTCRYPT MESSAGE-----",
+   "b64": null,
+   "expect": [
+    {
+     "name": "",
+     "text": "Argon2id fixture 3.1.0"
+    }
+   ]
+  },
+  {
+   "label": "v3 Argon2id 64 MiB x3, fișier",
+   "pass": "p4r0l4 argon",
+   "level": "a2-64",
+   "armored": null,
+   "b64": "VkNSWVBUAwAAAAOViRD2Vojrwat9grVdTBnj43OWq3kTs00NVcK9AAEAAAHkgDFg1okVdmcYMmsH/52XSMXRGaTSuguuThq1NH5datrmUjjX2jLScOM=",
+   "expect": [
+    {
+     "name": "doc.txt",
+     "text": "continut v3"
+    }
+   ]
+  }
+ ]
+}

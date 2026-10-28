@@ -2,7 +2,7 @@
 
 [English](README.md) · **Română** · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versiune:** 3.1.0 · **Ultima actualizare:** 2026-10-27
+**Versiune:** 3.1.1 · **Ultima actualizare:** 2026-10-28
 
 **Stare:** experimental · **Offline:** complet
 
@@ -27,6 +27,8 @@ Criptare/decriptare de fișiere și text în browser, într-un singur `index.htm
 ## Detalii criptografice și formatul fișierului (citite din cod, 3.1.0)
 
 > **Neauditat independent.** Schema de mai jos este documentată exact așa cum o implementează codul actual. Este o descriere, nu o garanție de securitate, și nu a fost revizuită de un criptograf extern.
+
+> **Revizuire de cod făcută de o AI, nu audit.** O revizuire criptografică de cod a fost făcută de Claude (AI), la cerere: vezi [`docs/REVIZUIRE-CRIPTO.md`](docs/REVIZUIRE-CRIPTO.md) (model de amenințare, ce s-a verificat, constatări pe severitate, ce nu s-a putut verifica, limite; rezumat în engleză la început). **Nu** este audit independent, nu înlocuiește unul și nu declară aplicația sigură. 3.1.1 corectează trei defecte mici găsite acolo, fără a schimba formatul fișierelor.
 
 **Derivarea cheii (KDF)**
 - Algoritm implicit: **PBKDF2** cu HMAC-SHA-256 (`deriveKey` din Web Crypto); containerele v1/v2 sunt neschimbate. Din 3.1.0 există și un nivel **opțional Argon2id** (vezi mai jos); scrypt nu este folosit.
@@ -77,7 +79,7 @@ Conținutul înainte de criptare (v2): `număr de fișiere` (uint16 BE), apoi pe
 - Parola rămâne în memoria browserului pe durata sesiunii; un dispozitiv compromis (malware, extensii) anulează protecția.
 
 ## Date și confidențialitate
-Nicio cerere de rețea: pagina are CSP cu `connect-src 'self'`, iar `fetch`/`XMLHttpRequest`/`sendBeacon` sunt blocate în cod (jurnal „Privacy audit” în pagină). Fără telemetrie, fără fonturi sau scripturi externe. Verificat la audit: 0 cereri externe la încărcare. Singurele legături externe sunt cele din subsol și fereastra „Despre” (se deschid doar la click).
+Nicio cerere de rețea: pagina are CSP cu `connect-src 'self'`, iar `fetch`/`XMLHttpRequest`/`sendBeacon` sunt blocate în cod (jurnal „Privacy audit” în pagină). Fără telemetrie, fără fonturi sau scripturi externe. Verificat în testele proprii ale proiectului (nu audit independent): 0 cereri externe la încărcare. Singurele legături externe sunt cele din subsol și fereastra „Despre” (se deschid doar la click).
 
 ## Limitări
 Fișierele sunt citite integral în memorie (de câteva ori, în timpul criptării): limită practică 400 MB per operație (testat: 380 MB ok, ≈860 MB blochează fila). Pentru fișiere mai mari folosește o unealtă desktop.
@@ -87,9 +89,12 @@ CSP nu mai permite `'unsafe-inline'` pentru scripturi: scriptul unic din pagină
 ## Licență
 MIT, conform antetului din `index.html`; vezi `LICENSE`.
 
-Audit: 2026-10-10
+Verificare internă (nu audit independent): 2026-10-10
 
 ## Istoric / Changelog
+
+### 3.1.1 — 2026-10-28
+- Revizuire criptografică de cod făcută de Claude (AI), la cerere - **nu este audit independent**: raport în `docs/REVIZUIRE-CRIPTO.md`. Corecții (formatul fișierelor neschimbat, fișierele 3.0.1/3.1.0 se deschid): verificare strictă a limitelor la conținutul decriptat; Ctrl+Enter nu mai pornește derivări de cheie suprapuse; parola slabă confirmată nu mai rămâne într-o variabilă globală. Teste noi `tests/cripto.test.mjs`, `tests/cripto-ui.mjs`.
 
 ### 2.2.5 — 2026-10-22
 - fff-kit 1.1.4: ținte tactile și text minim; ținte tactile/text corectate

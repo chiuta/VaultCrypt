@@ -1,5 +1,9 @@
 # Jurnal de modificări — VaultCrypt
 
+## 3.1.2 — 2026-10-31
+
+Doar interfață (accesibilitate pe telefon, 360×740): caseta „seal-wipe” 13 → 24 px; versiunea din subsol aliniată. Fără alte schimbări de comportament.
+
 ## 3.1.1 — 2026-10-28 (anterior: 3.1.0)
 Revizuire de cod criptografică făcută de Claude (AI), la cerere: **NU este audit independent** și nu înlocuiește unul. Raport: `docs/REVIZUIRE-CRIPTO.md`. Formatul `.vault` și derivarea cheii NU s-au schimbat; fișierele create cu 3.0.1/3.1.0 se deschid (verificat cu containere generate din interfața 3.1.0, `tests/fixtures-compat.json`).
 - Corectat: `parsePayload` accepta conținut autentic dar malformat (trunchiat, lungimi peste capăt, până la 65.535 de intrări fantomă) și raporta succes; acum orice citire în afara limitelor dă eroare. Containerele create de aplicație au payload exact și nu sunt afectate.

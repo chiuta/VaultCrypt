@@ -1,5 +1,9 @@
 # Jurnal de modificări — VaultCrypt
 
+## 3.1.2 — 2026-11-02 (reîmprospătare kit)
+
+- Kit reîmprospătat (fără module noi: sincronizarea și istoricul nu sunt activate în această aplicație, fiindcă păstrează secrete). Versiunea aplicației nu se schimbă.
+
 ## 3.1.2 — 2026-10-31
 
 Doar interfață (accesibilitate pe telefon, 360×740): caseta „seal-wipe” 13 → 24 px; versiunea din subsol aliniată. Fără alte schimbări de comportament.

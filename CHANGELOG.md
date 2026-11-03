@@ -1,5 +1,9 @@
 # Jurnal de modificări — VaultCrypt
 
+## 3.1.3 — 2026-11-03
+
+Fila „Chei API”: seiful comun (PBKDF2 + AES-GCM, parolă) pentru cheile API; se trimit către Nexus, AI Liber și ARENA ca plic keys/vault (fișier, clipboard, cod QR, altă filă; niciodată prin link). Cod comun din hub: tools/fff-envelope.js și tools/fff-seif.js (injectat).
+
 ## 3.1.2 — 2026-11-02 (reîmprospătare kit)
 
 - Kit reîmprospătat (fără module noi: sincronizarea și istoricul nu sunt activate în această aplicație, fiindcă păstrează secrete). Versiunea aplicației nu se schimbă.

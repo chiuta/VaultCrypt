@@ -19,7 +19,7 @@
     "vaultcrypt.sec"
   ],
   "sizeBytes": 475107,
-  "sha256": "ac95c57daa888be9d814508fe6e9452579ea561da50bcd563d72f6e421f436a8",
+  "sha256": "b1db0d4958006d79dd2bad57bf9e51223011a2f3224171f0b2d54c7d41f76770",
   "csp": {
     "present": true,
     "directives": {

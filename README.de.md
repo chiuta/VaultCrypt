@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · **Deutsch** · [Magyar](README.hu.md)
 
-**Version:** 3.1.5 · **Zuletzt aktualisiert:** 2026-11-07
+**Version:** 3.1.6 · **Zuletzt aktualisiert:** 2026-11-08
 
 **Status:** experimentell · **Offline:** vollständig
 

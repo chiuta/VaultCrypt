@@ -2,7 +2,7 @@
   "schema": 1,
   "slug": "vaultcrypt",
   "name": "VaultCrypt — in-browser encryption",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "updated": "2026-11-15",
   "description": "Encrypt and decrypt any file or text with AES-256 directly in your browser. No server, no account, no telemetry. One HTML file, fully offline. Not independently security-audited.",
   "egress": [],
@@ -19,8 +19,8 @@
     "vaultcrypt.lang",
     "vaultcrypt.sec"
   ],
-  "sizeBytes": 624584,
-  "sha256": "283b031d5691d56aced2289c80120d51f00d0eb840c6b2f0e1ebc86183981298",
+  "sizeBytes": 642620,
+  "sha256": "161580f75d03ad6ae974727f6eceb70e1e80a08220ec349120ff6a9c4a373777",
   "csp": {
     "present": true,
     "directives": {
@@ -64,6 +64,7 @@
       "exit",
       "view",
       "a11y",
+      "share",
       "ux",
       "label",
       "bundle",
@@ -71,7 +72,7 @@
     ]
   },
   "kit": {
-    "version": "1.6.0",
+    "version": "1.7.0",
     "modules": [
       "core",
       "store",
@@ -79,6 +80,7 @@
       "exit",
       "view",
       "a11y",
+      "share",
       "ux",
       "label",
       "bundle",
